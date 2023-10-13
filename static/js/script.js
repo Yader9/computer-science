@@ -50,14 +50,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 const reply = data.reply;
                 appendMessageToChat("Bot", reply);
 
-                // Check if it's the first exchange
-                console.log("Is first exchange?", firstExchange);
-                if(firstExchange && data.quick_replies) {
+                // Added an if condition for quick_replies, independent of the firstExchange flag
+                if(data.quick_replies) {
                     displayQuickReplies(data.quick_replies);
+                }
+
+                if (firstExchange) {
                     firstExchange = false;
                 }
-                
-                // Play the sound
+
                 const receiveSound = document.getElementById("sendSound");
                 receiveSound.volume = 0.5;
                 receiveSound.play();
@@ -68,6 +69,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }, 1000);
     }
+
 
     function appendMessageToChat(sender, message) {
         const messageDiv = document.createElement("div");

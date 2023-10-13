@@ -12,17 +12,19 @@ import openai
 from openai.error import OpenAIError
 from flask_session import Session
 
+# Set up logging
 logging.basicConfig(level=logging.DEBUG)
 
+# Initialize Flask app
 app = Flask(__name__)
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
 Session(app)
 
+# Global variables
 user_context = {}
 openai.api_key = os.environ.get('OPENAI_API_KEY')
-
 REQUEST_COUNT = 0
 
 
@@ -52,6 +54,7 @@ def chatbot():
     """Endpoint to communicate with the chatbot and get a response."""
     global REQUEST_COUNT
 
+    # Check session for user_id
     if 'user_id' not in session:
         session['user_id'] = os.urandom(24).hex()
     user_id = session['user_id']
@@ -59,21 +62,33 @@ def chatbot():
     data = request.get_json()
     message = data['message']
 
+    # Check if the user has a context. If not, create one.
     if user_id not in user_context:
         language = detect_language(message)
+        user_context[user_id] = {
+            "language_preference": language,
+            "previous_questions": [],
+            "received_welcome": False,
+            "creation_time": datetime.now()
+        }
+
+    context = user_context[user_id]
+
+    # Check if the message is a page reload signal
+    if datetime.now() - context['creation_time'] > timedelta(hours=1):
+        del user_context[user_id]
+
+    # Send the welcome message if it hasn't been sent yet.
+    if not context['received_welcome']:
+        language = context["language_preference"]
         welcome_message = (
             '¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
             if language == 'spanish'
             else 'Welcome to the PCB Chatbot! How can I assist you today?'
         )
-        user_context[user_id] = {
-            "language_preference": language,
-            "previous_questions": [message],
-            "creation_time": datetime.now()
-        }
+        context['received_welcome'] = True
         quick_replies = get_quick_replies(language)
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
-    context = user_context[user_id]
 
     # Check if the context is older than an hour
     if datetime.now() - context['creation_time'] > timedelta(hours=1):
