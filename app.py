@@ -3,7 +3,6 @@ This module provides an endpoint for a Chatbot service to answer PCB-related que
 """
 
 # Import necessary libraries
-
 import logging
 import os
 import time
