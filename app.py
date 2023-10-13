@@ -3,6 +3,7 @@ This module provides an endpoint for a Chatbot service to answer PCB-related que
 """
 
 # Import necessary libraries
+
 import logging
 import os
 import time
@@ -16,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_TYPE'] ='filesystem'
+app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
 Session(app)
 
@@ -31,6 +32,14 @@ def detect_language(message):
     spanish_keywords = ['hola', 'buenas',
                         'ayuda', 'día', 'gracias', 'por favor']
     return 'spanish' if any(word in message.lower() for word in spanish_keywords) else 'english'
+
+
+def get_quick_replies(language):
+    """Generate quick replies based on the user's language preference."""
+    if language == 'spanish':
+        return ['¿Qué es un PCB?', 'Cuéntame sobre electrónica', '¿Cómo se hacen los PCBs?']
+    else:
+        return ['What is a PCB?', 'Tell me about electronics', 'How are PCBs made?']
 
 
 @app.route('/')
@@ -53,21 +62,18 @@ def chatbot():
 
     if user_id not in user_context:
         language = detect_language(message)
-        welcome_message = ('¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
-                           if language == 'spanish'
-                           else 'Welcome to the PCB Chatbot! How can I assist you today?')
+        welcome_message = (
+            '¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
+            if language == 'spanish'
+            else 'Welcome to the PCB Chatbot! How can I assist you today?'
+        )
         user_context[user_id] = {
             "language_preference": language,
             "previous_questions": [message],
             "creation_time": datetime.now()
         }
-        quick_replies = ['¿Qué es un PCB?',
-                         'Cuéntame sobre electrónica', '¿Cómo se hacen los PCBs?']
-        if language == 'english':
-            quick_replies = ['What is a PCB?',
-                             'Tell me about electronics', 'How are PCBs made?']
+        quick_replies = get_quick_replies(language)
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
-
     context = user_context[user_id]
 
     # Check if the context is older than an hour
@@ -125,16 +131,12 @@ def chatbot():
     # Sugerencias de respuesta rápida
     if 'has_received_quick_replies' not in context:
         context['has_received_quick_replies'] = True
+        quick_replies = get_quick_replies(context["language_preference"])
     else:
         quick_replies = []
 
-    quick_replies = ['¿Qué es un PCB?',
-                     'Cuéntame sobre electrónica', '¿Cómo se hacen los PCBs?']
-    if context["language_preference"] == 'english':
-        quick_replies = ['What is a PCB?',
-                         'Tell me about electronics', 'How are PCBs made?']
-
     return jsonify({'reply': reply, 'quick_replies': quick_replies})
+
 
 if os.environ.get('HEROKU_ENV'):
     gunicorn_logger = logging.getLogger('gunicorn.error')
