@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 // Added an if condition for quick_replies, independent of the firstExchange flag
                 if(data.quick_replies) {
+                    console.log("Displaying quick replies...");
                     displayQuickReplies(data.quick_replies);
                 }
 
@@ -90,6 +91,8 @@ document.addEventListener("DOMContentLoaded", function() {
             btn.className = 'quick-reply';
             btn.innerText = reply;
             btn.onclick = function() {
+                console.log("Quick reply clicked: ", reply);
+                event.stopPropagation(); 
                 chatInput.value = reply;
                 sendInputMessage();
             };
