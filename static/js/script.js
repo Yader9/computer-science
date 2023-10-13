@@ -18,6 +18,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function sendInputMessage() {
         console.log("Sending input message...");
+
+        setTimeout(() => {
+            console.log("Force hiding quick replies after delay...");
+            quickReplies.style.display = 'none';
+        }, 500);  // Adjust timing as needed for testing
         
         // Esconder las Quick Replies inmediatamente al enviar un mensaje
         quickReplies.style.display = 'none';
@@ -91,8 +96,6 @@ document.addEventListener("DOMContentLoaded", function() {
             btn.className = 'quick-reply';
             btn.innerText = reply;
             btn.onclick = function() {
-                console.log("Quick reply clicked: ", reply);
-                event.stopPropagation(); 
                 chatInput.value = reply;
                 sendInputMessage();
             };
