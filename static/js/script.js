@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
     let firstExchange = true;
-    
+
     let observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
             if (mutation.attributeName === "style") {
@@ -19,8 +19,7 @@ document.addEventListener("DOMContentLoaded", function() {
         attributes: true // configure it to listen to attribute changes
     });
     
-
-    chatInput.addEventListener("keydown", function (event) {
+    chatInput.addEventListener("keydown", function(event) {
         if (event.keyCode === 13 && !event.shiftKey) {
             event.preventDefault();
             sendInputMessage();
@@ -32,14 +31,7 @@ document.addEventListener("DOMContentLoaded", function() {
     function sendInputMessage() {
         console.log("Sending input message...");
 
-        setTimeout(() => {
-            console.log("Force hiding quick replies after delay...");
-            quickReplies.style.display = 'none';
-        }, 500);  // Adjust timing as needed for testing
-        
-        // Esconder las Quick Replies inmediatamente al enviar un mensaje
         quickReplies.style.display = 'none';
-
         const message = chatInput.value.trim();
         if (message) {
             if (!soundInitialized) {
@@ -68,8 +60,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const reply = data.reply;
                 appendMessageToChat("Bot", reply);
 
-                // Added an if condition for quick_replies, independent of the firstExchange flag
-                if(data.quick_replies) {
+                if (data.quick_replies) {
                     console.log("Displaying quick replies...");
                     displayQuickReplies(data.quick_replies);
                 }
@@ -88,7 +79,6 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }, 1000);
     }
-
 
     function appendMessageToChat(sender, message) {
         const messageDiv = document.createElement("div");
@@ -111,10 +101,11 @@ document.addEventListener("DOMContentLoaded", function() {
             btn.onclick = function() {
                 chatInput.value = reply;
                 sendInputMessage();
+                quickReplies.style.display = 'none';
             };
             quickReplies.appendChild(btn);
         });
-
+        
         quickReplies.style.display = 'block';
     }
 
@@ -131,7 +122,5 @@ document.addEventListener("DOMContentLoaded", function() {
             introScreen.style.display = 'none';
         }
         document.querySelector(".chat-container").style.display = "block";
-    });    
-    
+    });
 });
-
