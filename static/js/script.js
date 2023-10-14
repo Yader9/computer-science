@@ -6,6 +6,19 @@ document.addEventListener("DOMContentLoaded", function() {
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
     let firstExchange = true;
+    
+    let observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.attributeName === "style") {
+                console.log("quickReplies style changed to:", quickReplies.style.display);
+            }
+        });
+    });
+    
+    observer.observe(quickReplies, {
+        attributes: true // configure it to listen to attribute changes
+    });
+    
 
     chatInput.addEventListener("keydown", function (event) {
         if (event.keyCode === 13 && !event.shiftKey) {
