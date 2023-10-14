@@ -41,7 +41,29 @@
     </div>
 
     <audio id="sendSound" src="{{ url_for('static', filename='audio/notification_audio.mp3') }}" preload="auto"></audio>
-    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const title = document.getElementById("chatbotTitle");
+            const text = title.textContent;
+            title.textContent = "";
+            
+            let index = 0;
+            
+            function typeTitle() {
+                if (index < text.length) {
+                    title.textContent += text[index];
+                    index++;
+                    setTimeout(typeTitle, 150);
+                } else {
+                    title.style.animation = "blink 0.5s step-end infinite";
+                }
+            }
+        
+            typeTitle();
+        });
+    </script>
+        
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
