@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
     let firstExchange = true;
+    let lastQuickReplies = [];
 
     let observer = new MutationObserver(mutations => {
         mutations.forEach(mutation => {
@@ -89,25 +90,33 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function displayQuickReplies(replies) {
-        console.log("Displaying quick replies...");
-        while (quickReplies.firstChild) {
-            quickReplies.removeChild(quickReplies.firstChild);
+        // Convert both arrays to strings and compare
+        if (JSON.stringify(replies) !== JSON.stringify(lastQuickReplies)) {
+            console.log("Displaying quick replies...");
+    
+            // Clear the current quick replies
+            while (quickReplies.firstChild) {
+                quickReplies.removeChild(quickReplies.firstChild);
+            }
+    
+            // Display new quick replies and update the stored ones
+            replies.forEach(reply => {
+                const btn = document.createElement('div');
+                btn.className = 'quick-reply';
+                btn.innerText = reply;
+                btn.onclick = function() {
+                    chatInput.value = reply;
+                    sendInputMessage();
+                    quickReplies.style.display = 'none';
+                };
+                quickReplies.appendChild(btn);
+            });
+            
+            quickReplies.style.display = 'block';
+            lastQuickReplies = replies.slice();  // Store a copy of the current replies
         }
-
-        replies.forEach(reply => {
-            const btn = document.createElement('div');
-            btn.className = 'quick-reply';
-            btn.innerText = reply;
-            btn.onclick = function() {
-                chatInput.value = reply;
-                sendInputMessage();
-                quickReplies.style.display = 'none';
-            };
-            quickReplies.appendChild(btn);
-        });
-        
-        quickReplies.style.display = 'block';
     }
+    
 
     function enableSound() {
         console.log("Enabling sound...");
