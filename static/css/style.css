@@ -30,7 +30,7 @@ body {
     padding: 16px;
     overflow-y: auto;
     border-bottom: 1px solid #eaeaea;
-    max-height: calc(100% - 50px - 40px); 
+    height: calc(100% - 50px - 40px); 
 }
 
 .chat-input-container {
@@ -109,7 +109,7 @@ span#typingIndicator {
         height: 80vh;
     }
     .chat-output {
-        height: calc(80vh - 120px);
+        height: calc(80vh - 50px - 40px); 
     }
 }
 
