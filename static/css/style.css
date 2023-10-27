@@ -5,6 +5,9 @@ body {
     margin: 0;
     padding: 20px;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .chat-container {
@@ -16,6 +19,7 @@ body {
     overflow: hidden;
     max-height: 90vh; 
     overflow-y: auto;
+    margin: auto 0;
 }
 
 .chat-box {
