@@ -12,15 +12,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
-<body>
-     <div id="introScreen" class="text-center"> 
+<body class="d-flex flex-column h-100">
+     <div id="introScreen" class="text-center flex-grow-1"> 
         <h1 id="chatbotTitle">PCB ChatBot</h1>
         <img src="static/img/pcb_chatbot.png" alt="PCB ChatBot Logo" class="img-fluid mx-auto d-block mt-4">
        
         <button id="startChatButton" class="btn btn-primary">Comenzar chat</button>
     </div>
 
-    <div class="chat-container" style="display: none;">
+    <div class="chat-container flex-grow-1" style="display: none;">
         <div class="chat-box">
             <div class="chat-output" id="chatOutput"></div>
             <div class="typing-animation" id="typingAnimation" style="display: none;">
@@ -34,16 +34,15 @@
             <div class="quick-replies" id="quickReplies" style="display: none;"></div>
             
             <div class="chat-input-container">
-  
                 <textarea class="chat-input form-control" id="chatInput" placeholder="Escribe un mensaje..."></textarea>
-                <button id="sendButton" class="btn btn-primary mt-2">Enviar</button> <!-- mt-2 es una clase de Bootstrap que añade un margen superior -->
+                <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
             </div>
         </div>
     </div>
 
     <audio id="sendSound" src="{{ url_for('static', filename='audio/notification_audio.mp3') }}" preload="auto"></audio>
 
-    <footer class="text-center mt-4">
+    <footer class="text-center mt-4 d-flex align-items-center justify-content-center">
         &copy; 2023 PCB ChatBot. Todos los derechos reservados.
     </footer>
 
