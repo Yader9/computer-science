@@ -82,9 +82,9 @@ def chatbot():
     if not context['received_welcome']:
         language = context["language_preference"]
         welcome_message = (
-            '¡Bienvenido al Chatbot de SLYZED! ¿En qué puedo ayudarte hoy?'
+            '¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
             if language == 'spanish'
-            else 'Welcome to the SLYZED Chatbot! How can I assist you today?'
+            else 'Welcome to the PCB Chatbot! How can I assist you today?'
         )
         context['received_welcome'] = True
         quick_replies = get_quick_replies(language)
@@ -105,7 +105,7 @@ def chatbot():
 
     # Control the flow for specific questions
     if message.lower() == 'hola':
-        return jsonify({'reply': '¡Te saluda el Chatbot de SLYZED! ¿En qué puedo ayudarte?', 'quick_replies': quick_replies})
+        return jsonify({'reply': '¡Te saluda el Chatbot de PCB! ¿En qué puedo ayudarte?', 'quick_replies': quick_replies})
 
     REQUEST_COUNT += 1
     if REQUEST_COUNT > 50:  # Limit the number of API calls
