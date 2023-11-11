@@ -36,14 +36,14 @@ body {
 }
 
 .chat-input-container {
-    display: flex;
     padding: 10px;
     border-top: 1px solid #eaeaea;
+    display: flex;
     align-items: center; /* Align items vertically */
-    width: calc(100% - 20px); /* Adjust for padding */
+    width: calc(100% - 20px); /* Subtracting the total horizontal padding from the container width */
 }
 
-.chat-input {
+.chat-input.form-control {
     flex-grow: 1; /* Input will fill the space available */
     margin-right: 10px; /* Spacing between input and button */
     padding: 10px;
