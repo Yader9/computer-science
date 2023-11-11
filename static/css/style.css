@@ -36,20 +36,21 @@ body {
 }
 
 .chat-input-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
     padding: 10px;
     border-top: 1px solid #eaeaea;
+    display: flex;
+    align-items: center; /* Align items vertically */
 }
 
 .chat-input {
-    flex: 1; /* This will allow the input to expand */
-    margin-right: 10px; /* Adjust the margin as needed */
+    flex-grow: 1; /* Input will fill the space available */
+    margin-right: 10px; /* Spacing between input and button */
     padding: 10px;
-    border: 1px solid #ccc; /* Add a border to match the design */
+    height: 40px; /* Fixed height for the input */
+    border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
+    resize: none; /* Prevents resizing of the textarea */
 }
 
 button#sendButton {
@@ -60,6 +61,7 @@ button#sendButton {
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s;
+    height: 40px; /* Match the button height to the input field */
 }
 
 button#sendButton:hover {
