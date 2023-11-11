@@ -36,10 +36,11 @@ body {
 }
 
 .chat-input-container {
+    display: flex;
     padding: 10px;
     border-top: 1px solid #eaeaea;
-    display: flex;
     align-items: center; /* Align items vertically */
+    width: calc(100% - 20px); /* Adjust for padding */
 }
 
 .chat-input {
@@ -62,6 +63,7 @@ button#sendButton {
     cursor: pointer;
     transition: background-color 0.3s;
     height: 40px; /* Match the button height to the input field */
+    white-space: nowrap; /* Prevents text inside the button from wrapping */
 }
 
 button#sendButton:hover {
