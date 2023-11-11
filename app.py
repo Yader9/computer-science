@@ -50,8 +50,8 @@ def process_request(data, response_queue):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": data['message']}
             ],
-            max_tokens=300,
-            temperature=0.2
+            max_tokens=150,
+            temperature=0.5
         )
         reply = response.choices[0].get('message', {}).get('content').strip()
     except Exception as e:
@@ -59,6 +59,7 @@ def process_request(data, response_queue):
         logging.error("Error processing request: %s", str(e))
 
     response_queue.put(reply)
+
 
 @app.route('/')
 def index():
@@ -108,9 +109,9 @@ def chatbot():
     Thread(target=process_request, args=(data, response_queue)).start()
 
     try:
-        reply = response_queue.get(timeout=25)  # Espera un máximo de 25 segundos
+        reply = response_queue.get(timeout=35)  # Espera un máximo de 35 segundos
     except Empty:
-        return jsonify({'reply': "Timeout occurred"}), 504
+        return jsonify({'reply': "La respuesta está tardando más de lo esperado, por favor intenta de nuevo más tarde."}), 504
 
     quick_replies = get_quick_replies(context["language_preference"])    
     return jsonify({'reply': reply, 'quick_replies': quick_replies})
