@@ -1,21 +1,23 @@
-"""
-This module provides an endpoint for a Chatbot service to answer PCB-related questions.
-"""
-
-# Import necessary libraries
-import logging
-import os
-from flask import Flask, render_template
-from flask_socketio import SocketIO
+from flask import Flask, request, jsonify, render_template
 import openai
+import os
 
-# Initialize Flask and SocketIO
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app)
+openai.api_key = os.getenv('OPENAI_API_KEY')
 
-# Global variable
-openai.api_key = os.environ.get('OPENAI_API_KEY')
+@app.route('/')
+def index():
+    """Renders the chatbot interface."""
+    return render_template('chatbot_interface.html')
+
+@app.route('/send_message', methods=['POST'])
+def send_message():
+    data = request.json
+    message = data['message']
+    language = detect_language(message)
+    quick_replies = get_quick_replies(language)
+    reply = call_openai_api(message)
+    return jsonify({'reply': reply, 'quick_replies': quick_replies})
 
 def detect_language(message):
     """Detect the language of a given message."""
@@ -42,22 +44,8 @@ def call_openai_api(message):
         )
         return response.choices[0].get('message', {}).get('content').strip()
     except Exception as e:
-        logging.error("Error processing request: %s", str(e))
+        app.logger.error("Error processing request: %s", str(e))
         return f"Error: {str(e)}"
 
-@app.route('/')
-def index():
-    """Renders the chatbot interface."""
-    return render_template('chatbot_interface.html')
-
-@socketio.on('send_message')
-def handle_message(data):
-    message = data['message']
-    language = detect_language(message)
-    quick_replies = get_quick_replies(language)
-    reply = call_openai_api(message)
-    socketio.emit('receive_reply', {'reply': reply, 'quick_replies': quick_replies})
-
 if __name__ == '__main__':
-    socketio.run(app)
-
+    app.run()

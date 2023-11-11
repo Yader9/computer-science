@@ -1,44 +1,49 @@
 document.addEventListener("DOMContentLoaded", function() {
+    const chatForm = document.getElementById("chatForm");
     const chatInput = document.getElementById("chatInput");
     const chatOutput = document.getElementById("chatOutput");
-    const sendButton = document.getElementById("sendButton");
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
 
-    // Inicializar la conexión WebSocket
-    const socket = io();
-
-    chatInput.addEventListener("keydown", function(event) {
-        if (event.keyCode === 13 && !event.shiftKey) {
-            event.preventDefault();
-            sendInputMessage();
-        }
-    });
-
-    sendButton.addEventListener("click", sendInputMessage);
-
-    function sendInputMessage() {
+    chatForm.addEventListener("submit", function(event) {
+        event.preventDefault();
         const message = chatInput.value.trim();
         if (message) {
             sendMessageToBot(message);
             chatInput.value = "";
         }
-    }
+    });
 
     function sendMessageToBot(message) {
         appendMessageToChat("User", message);
         typingAnimation.style.display = "block";
-        socket.emit('send_message', { message: message });
+
+        // Create a FormData object to send the message as a form field
+        const formData = new FormData();
+        formData.append("message", message);
+
+        // Send the form data to Flask
+        fetch('/send_message', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            handleBotReply(data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
     }
 
-    socket.on('receive_reply', function(data) {
+    function handleBotReply(data) {
         typingAnimation.style.display = "none";
         const reply = data.reply;
         appendMessageToChat("Bot", reply);
         displayQuickReplies(data.quick_replies);
         playReceiveSound();
-    });
+    }
 
     function appendMessageToChat(sender, message) {
         const messageDiv = document.createElement("div");
@@ -56,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function() {
             btn.innerText = reply;
             btn.onclick = function() {
                 chatInput.value = reply;
-                sendInputMessage();
+                chatForm.submit(); // Submit the form when a quick reply is clicked
                 quickReplies.style.display = 'none';
             };
             quickReplies.appendChild(btn);
@@ -84,3 +89,4 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector(".chat-container").style.display = "block";
     });
 });
+
