@@ -133,4 +133,3 @@ document.addEventListener("DOMContentLoaded", function() {
         document.querySelector(".chat-container").style.display = "block";
     });
 });
-
