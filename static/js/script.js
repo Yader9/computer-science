@@ -15,6 +15,12 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     });
+
+    const chatForm = document.getElementById("chatForm");
+    chatForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+        sendInputMessage();
+    });
     
     observer.observe(quickReplies, {
         attributes: true // configure it to listen to attribute changes
