@@ -5,11 +5,11 @@ This module provides an endpoint for a Chatbot service to answer PCB-related que
 # Import necessary libraries
 import logging
 import os
-import time
 from datetime import datetime, timedelta
+from threading import Thread
+from queue import Queue, Empty
 from flask import Flask, request, jsonify, session, render_template
 import openai
-from openai.error import OpenAIError
 from flask_session import Session
 
 # Set up logging
@@ -25,15 +25,14 @@ Session(app)
 # Global variables
 user_context = {}
 openai.api_key = os.environ.get('OPENAI_API_KEY')
-REQUEST_COUNT = 0
 
+# Cola para manejar solicitudes asincrónicas
+request_queue = Queue()
 
 def detect_language(message):
     """Detect the language of a given message."""
-    spanish_keywords = ['hola', 'buenas',
-                        'ayuda', 'día', 'gracias', 'por favor']
+    spanish_keywords = ['hola', 'buenas', 'ayuda', 'día', 'gracias', 'por favor']
     return 'spanish' if any(word in message.lower() for word in spanish_keywords) else 'english'
-
 
 def get_quick_replies(language):
     """Generate quick replies based on the user's language preference."""
@@ -42,25 +41,40 @@ def get_quick_replies(language):
     else:
         return ['What is a PCB?', 'Tell me about electronics', 'How are PCBs made?']
 
+def process_request(data, response_queue):
+    """Procesa la solicitud en un hilo separado."""
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": data['message']}
+            ],
+            max_tokens=300,
+            temperature=0.2
+        )
+        reply = response.choices[0].get('message', {}).get('content').strip()
+    except Exception as e:
+        reply = f"Error: {str(e)}"
+        logging.error("Error processing request: %s", str(e))
+
+    response_queue.put(reply)
 
 @app.route('/')
 def index():
     """Renders the chatbot interface."""
     return render_template('chatbot_interface.html')
 
-
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
     """Endpoint to communicate with the chatbot and get a response."""
-    global REQUEST_COUNT
+    data = request.get_json()
+    message = data['message']
 
     # Check session for user_id
     if 'user_id' not in session:
         session['user_id'] = os.urandom(24).hex()
     user_id = session['user_id']
-
-    data = request.get_json()
-    message = data['message']
 
     # Check if the user has a context. If not, create one.
     if user_id not in user_context:
@@ -90,67 +104,16 @@ def chatbot():
         quick_replies = get_quick_replies(language)
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
 
-    # Check if the context is older than an hour
-    if datetime.now() - context['creation_time'] > timedelta(hours=1):
-        del user_context[user_id]
+    response_queue = Queue()
+    Thread(target=process_request, args=(data, response_queue)).start()
 
-    if "arduino" in message.lower():
-        context["specific_product"] = "Arduino"
-    if "diseño" in message.lower() or "design" in message.lower():
-        context["last_inquired_topic"] = "PCB Design"
+    try:
+        reply = response_queue.get(timeout=25)  # Espera un máximo de 25 segundos
+    except Empty:
+        return jsonify({'reply': "Timeout occurred"}), 504
 
-    context["previous_questions"].append(message)
-    if len(context["previous_questions"]) > 5:
-        context["previous_questions"].pop(0)
-
-    # Control the flow for specific questions
-    if message.lower() == 'hola':
-        return jsonify({'reply': '¡Te saluda el Chatbot de PCB! ¿En qué puedo ayudarte?', 'quick_replies': quick_replies})
-
-    REQUEST_COUNT += 1
-    if REQUEST_COUNT > 50:  # Limit the number of API calls
-        return jsonify({'reply': "Has superado el número máximo de solicitudes. Intenta más tarde"})
-
-    for _ in range(3):  # 3 retry attempts
-        try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": message}
-                ],
-                max_tokens=300,
-                temperature=0.2
-            )
-
-            # Verificando la respuesta
-            choice_content = response.choices[0].get(
-                'message', {}).get('content')
-            if choice_content:
-                reply = choice_content.strip()
-                break
-            else:
-                logging.error("Unexpected response from OpenAI API")
-                return jsonify({'reply': "Sorry, I couldn't understand that."})
-
-        except OpenAIError as e:
-            logging.error("OpenAI API error: %s", str(e))
-            time.sleep(2)  # Esperamos un momento antes de intentar de nuevo
-            continue  # Continuar para intentar de nuevo
-
-        except Exception as e:  # pylint: disable=broad-except
-            logging.error("General error: %s", str(e))
-            return jsonify({'reply': f"Unexpected error: {str(e)}"})
-
-    # Sugerencias de respuesta rápida
-    if 'has_received_quick_replies' not in context:
-        context['has_received_quick_replies'] = True
-        quick_replies = get_quick_replies(context["language_preference"])
-    else:
-        quick_replies = []
-
+    quick_replies = get_quick_replies(context["language_preference"])    
     return jsonify({'reply': reply, 'quick_replies': quick_replies})
-
 
 if os.environ.get('HEROKU_ENV'):
     gunicorn_logger = logging.getLogger('gunicorn.error')
