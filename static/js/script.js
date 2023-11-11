@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     document.getElementById("startChatButton").addEventListener("click", function() {
+        console.log("Comenzar button clicked");
         const introScreen = document.getElementById('introScreen');
         if (introScreen) {
             introScreen.style.display = 'none';
