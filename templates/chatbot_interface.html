@@ -31,8 +31,10 @@
             <div class="quick-replies" id="quickReplies" style="display: none;"></div>
             
             <div class="chat-input-container">
-                <textarea class="chat-input form-control" id="chatInput" placeholder="Escribe un mensaje..."></textarea>
-                <button id="sendButton" class="btn btn-primary mt-2">Enviar</button>
+                <form id="chatForm"> <!-- Added form element -->
+                    <textarea class="chat-input form-control" id="chatInput" name="message" placeholder="Escribe un mensaje..."></textarea>
+                    <button type="submit" id="sendButton" class="btn btn-primary mt-2">Enviar</button> <!-- Added type and name attribute -->
+                </form>
             </div>
         </div>
     </div>
@@ -42,13 +44,7 @@
     <footer class="text-center mt-4 d-flex align-items-center justify-content-center">
         &copy; 2023 PCB ChatBot. Todos los derechos reservados.
     </footer>
-
-    <!-- Incluir Socket.IO -->
-    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
-    <!-- Incluir el script personalizado -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
     
-    <!-- Este script debe ir después de la inclusión de Socket.IO y script.js -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const title = document.getElementById("chatbotTitle");
@@ -73,7 +69,6 @@
 
 </body>
 </html>
-
 
 
 
