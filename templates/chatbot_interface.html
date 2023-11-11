@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCB Chatbot</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-
-    <!--  Archivo de estilo personalizado -->
+    <!-- Archivo de estilo personalizado -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="d-flex flex-column h-100">
-     <div id="introScreen" class="text-center flex-grow-1"> 
+    <div id="introScreen" class="text-center flex-grow-1"> 
         <h1 id="chatbotTitle">PCB ChatBot</h1>
-        <img src="static/img/pcb_chatbot_1.png" alt="PCB ChatBot Logo" class="img-fluid custom-logo-size mx-auto d-block mt-4">
-       
+        <img src="{{ url_for('static', filename='img/pcb_chatbot_1.png') }}" alt="PCB ChatBot Logo" class="img-fluid custom-logo-size mx-auto d-block mt-4">
         <button id="startChatButton" class="btn btn-primary">Comenzar chat</button>
     </div>
 
@@ -46,6 +43,12 @@
         &copy; 2023 PCB ChatBot. Todos los derechos reservados.
     </footer>
 
+    <!-- Incluir Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Incluir el script personalizado -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    
+    <!-- Este script debe ir después de la inclusión de Socket.IO y script.js -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const title = document.getElementById("chatbotTitle");
@@ -67,12 +70,9 @@
             typeTitle();
         });
     </script>
-        
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
 </body>
-
 </html>
-
 
 
 
