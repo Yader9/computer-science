@@ -44,9 +44,10 @@ body {
 }
 
 .chat-input {
-    width: 80%;
+    flex: 1; /* This will allow the input to expand */
+    margin-right: 10px; /* Adjust the margin as needed */
     padding: 10px;
-    border: none;
+    border: 1px solid #ccc; /* Add a border to match the design */
     border-radius: 4px;
     outline: none;
 }
