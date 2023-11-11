@@ -40,17 +40,18 @@ body {
     border-top: 1px solid #eaeaea;
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Adjusted for horizontal alignment */
 }
 
 .chat-input.form-control {
-    flex-grow: 1;
-    margin-right: 10px;
+    flex: 1; /* Ensures that the input field fills the container */
+    margin-right: 10px; /* Space between input field and button */
     padding: 10px;
-    height: 40px;
+    height: 40px; /* Consistent height */
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
-    resize: none;
+    resize: none; /* Disable resize */
 }
 
 button#sendButton {
@@ -114,7 +115,13 @@ span#typingIndicator {
         max-height: 80vh;
     }
     .chat-output {
-        flex: 1;
+        padding-top: 16px; /* Adjust if necessary for mobile view */
+    }
+    .chat-input-container {
+        padding: 10px;
+    }
+    .chat-input.form-control {
+        margin-right: 0; /* Remove margin for the send button on small screens */
     }
 }
 
