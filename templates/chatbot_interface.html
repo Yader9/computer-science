@@ -11,44 +11,53 @@
 </head>
 
 <body class="d-flex flex-column h-100">
+    <!-- Intro Screen -->
     <div id="introScreen" class="text-center flex-grow-1"> 
         <h1 id="chatbotTitle">PCB ChatBot</h1>
         <img src="{{ url_for('static', filename='img/pcb_chatbot_1.png') }}" alt="PCB ChatBot Logo" class="img-fluid custom-logo-size mx-auto d-block mt-4">
         <button id="startChatButton" class="btn btn-primary">Comenzar chat</button>
     </div>
 
+    <!-- Chat Container -->
     <div class="chat-container flex-grow-1" style="display: none;">
         <div class="chat-box">
-            <h1 class="chatbot-title">PCB ChatBot</h1> <!-- Chat title for animation -->
-            <div class="chat-output" id="chatOutput"></div>
+            <!-- Chat Title -->
+            <h1 class="chatbot-title">PCB ChatBot</h1>
+            <!-- Chat Output -->
+            <div class="chat-output" id="chatOutput">
+                <!-- Messages will be dynamically inserted here -->
+            </div>
+            <!-- Typing Animation (if applicable) -->
             <div class="typing-animation" id="typingAnimation" style="display: none;">
                 PCB Bot está escribiendo
                 <span class="dot">.</span>
                 <span class="dot">.</span>
                 <span class="dot">.</span>
             </div>
-            
-            <!-- Quick reply section -->
+            <!-- Quick Replies (if applicable) -->
             <div class="quick-replies" id="quickReplies" style="display: none;"></div>
-            
+            <!-- Chat Input Container -->
             <div class="chat-input-container">
                 <form id="chatForm" class="d-flex justify-content-between"> 
-                    <textarea class="chat-input form-control" id="chatInput" name="message" placeholder="Escribe un mensaje..."></textarea>
+                    <textarea class="chat-input form-control" id="chatInput" placeholder="Escribe un mensaje..."></textarea>
                     <button type="submit" id="sendButton" class="btn btn-primary">Enviar</button>
                 </form>
             </div>
         </div>
     </div>
 
+    <!-- Notification Sound -->
     <audio id="sendSound" src="{{ url_for('static', filename='audio/notification_audio.mp3') }}" preload="auto"></audio>
 
+    <!-- Footer -->
     <footer class="text-center mt-4 d-flex align-items-center justify-content-center">
         &copy; 2023 PCB ChatBot. Todos los derechos reservados.
     </footer>
     
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script> <!-- External JS -->
+    <!-- External JavaScript -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- Title Animation Script -->
     <script>
-        // JavaScript for animations and interactions
         document.addEventListener("DOMContentLoaded", function() {
             const title = document.getElementById("chatbotTitle");
             const text = title.textContent;
@@ -69,7 +78,6 @@
             typeTitle();
         });
     </script>
-    
 </body>
 </html>
 
