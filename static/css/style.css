@@ -51,8 +51,8 @@ body {
 .chat-input.form-control {
     flex: 1; /* Ensures that the input field fills the container */
     margin-right: 10px; /* Space between input field and button */
-    padding: 10px;
-    height: 40px; /* Consistent height */
+    padding: 10px 15px;
+    height: 48px; /* Consistent height */
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
@@ -60,18 +60,21 @@ body {
 }
 
 button#sendButton {
-    padding: 8px 15px;
+    padding: 12px 20px;
+    height: 48px;
     background-color: #007BFF;
     border: none;
     color: white;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, box-shadow 0.3s;
     white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 button#sendButton:hover {
     background-color: #0056b3;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 span#typingIndicator {
