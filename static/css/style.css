@@ -47,7 +47,8 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
     background-color: #fff; /* To match the chat-container background */
     border-top: 1px solid #eaeaea;
     display: flex;
@@ -163,10 +164,13 @@ button#sendButton:hover {
     position: absolute;
     top: 0;
     left: 50%;
-    transform: translateY(-50%) translateX(-50%);
-    width: 100%;
-    font-size: 24px;
+    transform: translateX(-50%);
+    width: calc(100% - 32px); /* Reduced width to ensure padding */
+    text-align: center;
     z-index: 1000;
+    padding: 16px; /* Add padding to ensure it doesn't touch the edges */
+    box-sizing: border-box; /* Ensures padding is included in the width */
+    font-size: 24px;
     overflow: hidden;
     white-space: nowrap;
     border-right: .2em solid;
@@ -214,7 +218,7 @@ button#sendButton:hover {
     }
     .chat-input-container {
         padding-left: 10px; /* Maintain left padding */
-        padding-right: 4px; /* Reduce right padding to bring button closer to the edge */
+        padding-right: 10px; /* Reduce right padding to bring button closer to the edge */
     }
 
     .chat-input.form-control {
