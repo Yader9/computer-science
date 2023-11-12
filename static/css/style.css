@@ -18,17 +18,17 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     margin: auto;
-    display: flex; /* Use flexbox to control the layout */
-    flex-direction: column; /* Stack children vertically */
+    display: flex;
+    flex-direction: column;
     max-height: 90vh;
-    height: 90vh; /* Set a specific height to fill the view */
+    height: 90vh;
 }
 
 .chat-box {
     display: flex;
     flex-direction: column;
-    height: 100%; /* Make chat-box fill the container */
-    overflow: hidden; /* Add this to prevent scroll on the chat-container */
+    height: 100%;
+    overflow: hidden;
 }
 
 .chat-output {
@@ -44,19 +44,19 @@ body {
     border-top: 1px solid #eaeaea;
     display: flex;
     align-items: center;
-    justify-content: space-between; /* Adjusted for horizontal alignment */
-    margin-top: auto; /* Push the input area to the bottom */
+    justify-content: space-between;
+    margin-top: auto;
 }
 
 .chat-input.form-control {
-    flex: 1; /* Ensures that the input field fills the container */
-    margin-right: 10px; /* Space between input field and button */
+    flex: 1;
+    margin-right: 10px;
     padding: 10px 15px;
-    height: 48px; /* Consistent height */
+    height: 48px;
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
-    resize: none; /* Disable resize */
+    resize: none;
 }
 
 button#sendButton {
@@ -77,92 +77,7 @@ button#sendButton:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-span#typingIndicator {
-    padding-left: 16px;
-    color: #888;
-}
-
-.user, .bot {
-    margin-bottom: 10px;
-}
-
-.bot {
-    align-self: flex-start;
-    background-color: #f0f0f0;
-    border-radius: 10px 10px 10px 0;
-    padding: 8px 15px;
-}
-
-.user {
-    align-self: flex-end;
-    background-color: #007BFF;
-    color: white;
-    border-radius: 10px 10px 0 10px;
-    padding: 8px 15px;
-}
-
-.btn:active {
-    transform: translateY(2px);
-}
-
-.typing-animation {
-    color: #888;
-    font-style: italic;
-    padding-left: 16px;
-}
-
-.chat-output.flash {
-    background-color: #f2f2f2;
-}
-
-@media only screen and (max-width: 600px) {
-    body {
-        padding: 0; /* Remove padding on mobile for full width */
-    }
-    .chat-container {
-        width: 100%; /* Full width */
-        max-width: 100%; /* Ensure it does not exceed the viewport width */
-        margin: 0; /* Remove auto margin */
-        border-radius: 0; /* Optional: remove border radius for full-width alignment */
-        box-shadow: none; /* Remove shadow on mobile for a cleaner look */
-        height: 100vh; /* Full viewport height */
-        max-height: 100vh; /* Ensure it doesn't exceed the viewport height */
-        padding-bottom: 58px; /* Space for the input container */
-    }
-    .chat-box {
-        max-height: calc(100vh - 58px); /* Adjust max-height to account for input area */
-    }
-    .chat-output {
-        max-height: calc(100vh - 58px - 48px); /* Adjust max-height to account for input area and any header space */
-    }
-    .chat-input-container {
-        padding: 4px; /* Reduced padding within the input container */
-        position: fixed; /* Fix position to the bottom of the viewport */
-        bottom: 0; /* Align to the bottom */
-        left: 0; /* Align to the left */
-        width: 100%; /* Full width */
-        background-color: #fff; /* Match the chat-container background */
-        border-top: 1px solid #eaeaea;
-        box-sizing: border-box; /* Include padding in the width calculation */
-    }
-    .chat-input.form-control {
-        margin-right: 10px; /* Adjust margin between input and button */
-        padding: 10px; /* Adjust padding for better touch targets */
-        border-radius: 4px; /* Maintain border radius for aesthetics */
-        height: 40px; /* Adjust height if needed */
-        width: calc(100% - 60px); /* Adjust width to account for button width and maintain padding */
-    }
-    button#sendButton {
-        width: 48px; /* Set a fixed width for the send button */
-        height: 40px; /* Set height to match the input field */
-        padding: 0; /* Remove padding */
-        font-size: 24px; /* Adjust font size if needed */
-        line-height: 40px; /* Center the text vertically */
-        border-radius: 4px; /* Maintain border radius for aesthetics */
-        box-sizing: border-box; /* Include padding in the width calculation */
-    }
-
-
+/* Styles for Quick Replies */
 .quick-replies {
     padding: 0 16px 10px;
     display: flex;
@@ -264,6 +179,69 @@ span#typingIndicator {
     }
 }
 
+@media only screen and (max-width: 600px) {
+    body {
+        padding: 0;
+    }
+    .chat-container {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        height: 100vh;
+        max-height: 100vh;
+        padding-bottom: 58px; /* Space for the input container */
+    }
+    .chat-box {
+        max-height: calc(100vh - 58px);
+    }
+    .chat-output {
+        max-height: calc(100vh - 58px - 48px);
+    }
+    .chat-input-container {
+        padding: 4px;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        border-top: 1px solid #eaeaea;
+        box-sizing: border-box;
+    }
+    .chat-input.form-control {
+        margin-right: 10px;
+        padding: 10px;
+        border-radius: 4px;
+        height: 40px;
+        width: calc(100% - 60px); /* Adjust width to account for button width and maintain padding */
+    }
+    button#sendButton {
+        width: 48px;
+        height: 40px;
+        padding: 0;
+        font-size: 24px;
+        line-height: 40px;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    /* Styles for Quick Replies on mobile */
+    .quick-replies {
+        padding: 10px 10px 0;
+        margin-bottom: 60px;
+        justify-content: flex-start;
+    }
+    .quick-reply {
+        margin: 5px;
+        padding: 6px 12px;
+        border-radius: .25rem;
+        border: 1px solid #ccc;
+    }
+    .quick-reply:hover {
+        background-color: #ddd;
+        border-color: #bbb;
+    }
+}
 
 #introScreen {
     display: flex;   
