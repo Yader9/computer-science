@@ -1,3 +1,4 @@
+/* General body styles */
 body {
     font-family: Arial, sans-serif;
     background-color: #f6f6f6;
@@ -10,6 +11,7 @@ body {
     min-height: 100vh;
 }
 
+/* Container for the chat interface */
 .chat-container {
     background-color: #fff;
     width: 400px;
@@ -22,33 +24,28 @@ body {
     flex-direction: column;
     max-height: 90vh;
     height: 90vh;
-    position: relative;
-    padding-bottom: 70px;
+    position: relative; /* Keep this for positioning children absolutely */
 }
 
+/* The chat box where messages are displayed */
 .chat-box {
     display: flex;
     flex-direction: column;
     height: 100%;
     overflow: hidden;
-    padding-bottom: 70px; 
 }
 
+/* Where the chat messages appear */
 .chat-output {
     flex: 1;
     padding: 16px;
-    padding-top: 46px;
     overflow-y: auto;
     border-bottom: 1px solid #eaeaea;
 }
 
+/* The container for the input field and send button */
 .chat-input-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding: 10px;
     background-color: #fff; /* To match the chat-container background */
     border-top: 1px solid #eaeaea;
     display: flex;
@@ -56,6 +53,7 @@ body {
     justify-content: space-between;
 }
 
+/* The input field for typing messages */
 .chat-input.form-control {
     flex: 1;
     padding: 10px 15px;
@@ -64,16 +62,13 @@ body {
     border-radius: 4px;
     outline: none;
     resize: none;
-    margin-right: 10px; /* Ensure there is space between the input and the button */
-    margin-left: 1px;
-    flex-grow: 1; /* Input will fill the space */
+    margin-right: 10px;
 }
 
+/* The send button */
 button#sendButton {
     padding: 10px 16px;
     height: 48px;
-    margin-right: 0; /* Set or reduce the right margin to bring the button closer to the edge */
-    margin-left: 1px;
     background-color: #007BFF;
     border: none;
     color: white;
@@ -197,43 +192,38 @@ button#sendButton:hover {
 
 @media only screen and (max-width: 600px) {
     body {
-        padding: 0;
+        padding: 0; /* Remove padding to fit the chat container properly on mobile screens */
     }
     .chat-container {
-        position: relative; 
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-        border-radius: 0;
-        box-shadow: none;
-        height: 100vh;
-        max-height: 100vh;
-        padding-bottom: 70px; /* Space for the input container */
+        width: 100%; /* Full width on mobile devices */
+        max-width: 100%; /* Ensure it doesn't exceed the width of the screen */
+        margin: 0; /* Reset any margins */
+        border-radius: 0; /* Remove border radius for full width utilization */
+        box-shadow: none; /* Remove box shadow on mobile for a cleaner look */
+        height: 100vh; /* Full height to utilize the screen space */
+        max-height: 100vh; /* Ensure it doesn't exceed the height of the screen */
+        padding-bottom: 0; /* Reset padding-bottom since input container is in normal flow */
     }
     .chat-box {
-        max-height: calc(100vh - 58px);
+        max-height: calc(100vh - 48px); /* Adjust the max-height for the height of the input container */
     }
     .chat-output {
-        max-height: calc(100vh - 58px - 48px);
+        max-height: calc(100vh - 96px); /* Adjust this value based on the height of your input container */
+        padding-bottom: 0; /* Remove padding-bottom to prevent overlap */
     }
     .chat-input-container {
-        padding-left: 10px; /* Maintain left padding */
-        padding-right: 10px; /* Reduce right padding to bring button closer to the edge */
+        /* Allow the input container to be part of the normal document flow */
+        position: static;
+        margin-bottom: 10px; /* Add margin-bottom if needed for spacing */
     }
-
     .chat-input.form-control {
-        flex-grow: 1; /* Take available space */
-        margin-right: 4px;
-        margin-left: 1px;
-
+        margin-right: 0; /* Adjust the margin to ensure the input expands fully */
     }
-
     button#sendButton {
-        width: auto; /* Allows the button to shrink to the width of its content */
-        padding: 8px 12px; /* Reduce the padding to make the button smaller */
-        font-size: 16px; /* Adjust the font size if necessary */
-        margin-left: 1px;
+        margin: 0; /* Adjust the margin to ensure the button is aligned with the input */
+        padding: 8px 12px; /* Optional: Adjust padding to reduce button size on mobile */
     }
+
     /* Styles for Quick Replies on mobile */
     .quick-replies {
         padding: 10px 10px 0;
