@@ -116,24 +116,51 @@ span#typingIndicator {
 }
 
 @media only screen and (max-width: 600px) {
+    body {
+        padding: 0; /* Remove padding on mobile for full width */
+    }
     .chat-container {
-        width: 90%;
-        height: auto; /* Adjust for smaller screens */
+        width: 100%; /* Full width */
+        max-width: 100%; /* Ensure it does not exceed the viewport width */
+        margin: 0; /* Remove auto margin */
+        border-radius: 0; /* Optional: remove border radius for full-width alignment */
+        box-shadow: none; /* Remove shadow on mobile for a cleaner look */
+        height: 100vh; /* Full viewport height */
+        max-height: 100vh; /* Ensure it doesn't exceed the viewport height */
+        padding-bottom: 58px; /* Space for the input container */
     }
     .chat-box {
-        max-height: 80vh;
-        height: auto; /* Adjust for mobile to avoid overflow */
+        max-height: calc(100vh - 58px); /* Adjust max-height to account for input area */
     }
     .chat-output {
-        padding-top: 16px; /* Adjust if necessary for mobile view */
+        max-height: calc(100vh - 58px - 48px); /* Adjust max-height to account for input area and any header space */
     }
     .chat-input-container {
-        padding: 10px;
+        padding: 4px; /* Reduced padding within the input container */
+        position: fixed; /* Fix position to the bottom of the viewport */
+        bottom: 0; /* Align to the bottom */
+        left: 0; /* Align to the left */
+        width: 100%; /* Full width */
+        background-color: #fff; /* Match the chat-container background */
+        border-top: 1px solid #eaeaea;
+        box-sizing: border-box; /* Include padding in the width calculation */
     }
     .chat-input.form-control {
-        margin-right: 0; /* Remove margin for the send button on small screens */
+        margin-right: 10px; /* Adjust margin between input and button */
+        padding: 10px; /* Adjust padding for better touch targets */
+        border-radius: 4px; /* Maintain border radius for aesthetics */
+        height: 40px; /* Adjust height if needed */
+        width: calc(100% - 60px); /* Adjust width to account for button width and maintain padding */
     }
-}
+    button#sendButton {
+        width: 48px; /* Set a fixed width for the send button */
+        height: 40px; /* Set height to match the input field */
+        padding: 0; /* Remove padding */
+        font-size: 24px; /* Adjust font size if needed */
+        line-height: 40px; /* Center the text vertically */
+        border-radius: 4px; /* Maintain border radius for aesthetics */
+        box-sizing: border-box; /* Include padding in the width calculation */
+    }
 
 
 .quick-replies {
