@@ -22,6 +22,8 @@ body {
     flex-direction: column;
     max-height: 90vh;
     height: 90vh;
+    position: relative;
+    padding-bottom: 70px;
 }
 
 .chat-box {
@@ -29,6 +31,7 @@ body {
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    padding-bottom: 70px; 
 }
 
 .chat-output {
@@ -40,12 +43,16 @@ body {
 }
 
 .chat-input-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 10px;
+    background-color: #fff; /* To match the chat-container background */
     border-top: 1px solid #eaeaea;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: auto;
 }
 
 .chat-input.form-control {
@@ -57,6 +64,8 @@ body {
     border-radius: 4px;
     outline: none;
     resize: none;
+    margin-right: 10px; /* Ensure there is space between the input and the button */
+    flex-grow: 1; /* Input will fill the space */
 }
 
 button#sendButton {
@@ -191,7 +200,7 @@ button#sendButton:hover {
         box-shadow: none;
         height: 100vh;
         max-height: 100vh;
-        padding-bottom: 58px; /* Space for the input container */
+        padding-bottom: 70px; /* Space for the input container */
     }
     .chat-box {
         max-height: calc(100vh - 58px);
