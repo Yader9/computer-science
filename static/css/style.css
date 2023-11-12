@@ -57,7 +57,7 @@ body {
 
 .chat-input.form-control {
     flex: 1;
-    margin-right: 10px;
+    margin-right: 4px;
     padding: 10px 15px;
     height: 48px;
     border: 1px solid #ccc;
@@ -69,7 +69,7 @@ body {
 }
 
 button#sendButton {
-    padding: 12px 20px;
+    padding: 10px 16px;
     height: 48px;
     background-color: #007BFF;
     border: none;
@@ -209,30 +209,19 @@ button#sendButton:hover {
         max-height: calc(100vh - 58px - 48px);
     }
     .chat-input-container {
-        padding: 4px;
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #fff;
-        border-top: 1px solid #eaeaea;
-        box-sizing: border-box;
+        right: 10px; /* Adjust the right position to give space for the scrollbar */
+        left: 10px; /* Adjust if you have specific padding or margin requirements */
     }
+
     .chat-input.form-control {
-        margin-right: 10px;
-        padding: 10px;
-        border-radius: 4px;
-        height: 40px;
-        width: calc(100% - 60px); /* Adjust width to account for button width and maintain padding */
+        flex-grow: 1; /* Take available space */
+        margin-right: 4px; /* Reduce margin to bring the button closer */
     }
+
     button#sendButton {
-        width: 48px;
-        height: 40px;
-        padding: 0;
-        font-size: 24px;
-        line-height: 40px;
-        border-radius: 4px;
-        box-sizing: border-box;
+        width: auto; /* Allows the button to shrink to the width of its content */
+        padding: 8px 12px; /* Reduce the padding to make the button smaller */
+        font-size: 16px; /* Adjust the font size if necessary */
     }
     /* Styles for Quick Replies on mobile */
     .quick-replies {
