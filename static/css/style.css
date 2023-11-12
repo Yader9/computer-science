@@ -57,7 +57,7 @@ body {
 
 .chat-input.form-control {
     flex: 1;
-    margin-right: 4px;
+    margin-right: 1px;
     padding: 10px 15px;
     height: 48px;
     border: 1px solid #ccc;
@@ -215,7 +215,7 @@ button#sendButton:hover {
 
     .chat-input.form-control {
         flex-grow: 1; /* Take available space */
-        margin-right: 4px; /* Reduce margin to bring the button closer */
+        margin-right: 1px; /* Reduce margin to bring the button closer */
     }
 
     button#sendButton {
