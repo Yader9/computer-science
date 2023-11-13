@@ -6,8 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
     let firstExchange = localStorage.getItem('firstExchange') !== 'false';
-    let lastQuickReplies = [];
-
+    
     const chatForm = document.getElementById("chatForm");
     chatForm.addEventListener("submit", function(event) {
         event.preventDefault();
@@ -23,9 +22,15 @@ document.addEventListener("DOMContentLoaded", function() {
 
     sendButton.addEventListener("click", sendInputMessage);
 
+    function appendMessageToChat(sender, message) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = sender === "User" ? "user-message" : "bot-message";
+        messageDiv.textContent = message;
+        chatOutput.appendChild(messageDiv);
+        chatOutput.scrollTop = chatOutput.scrollHeight;
+    }
+
     function sendInputMessage() {
-        console.log("Sending input message...");
-        quickReplies.style.display = 'none';
         const message = chatInput.value.trim();
         if (message) {
             if (!soundInitialized) {
@@ -38,10 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function sendMessageToBot(message) {
-        console.log("Sending message to bot...");
         appendMessageToChat("User", message);
         typingAnimation.style.display = "block";
-
         fetch("/chatbot", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -63,17 +66,11 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         typingAnimation.style.display = "none";
-        
-        // Check if it's the first exchange and if quick replies are available
         if (firstExchange && data.quick_replies && data.quick_replies.length > 0) {
             displayQuickReplies(data.quick_replies);
-            
-            // Now that the quick replies have been handled,
-            // set firstExchange to false and update localStorage
             firstExchange = false;
             localStorage.setItem('firstExchange', 'false');
         }
-        
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
@@ -93,7 +90,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     console.error("Error from OpenAI:", data.error_message);
                     typingAnimation.style.display = "none";
                 } else {
-                    // Continue polling if the status is still 'pending'
                     pollForResponse(user_id);
                 }
             })
@@ -101,11 +97,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.error("Error while polling for response:", error);
                 typingAnimation.style.display = "none";
             });
-        }, 3000); // Poll every 3 seconds
+        }, 3000);
     }
 
     function displayQuickReplies(replies) {
-        quickReplies.innerHTML = ''; // Clear previous quick replies
+        quickReplies.innerHTML = '';
         replies.forEach(reply => {
             const button = document.createElement('button');
             button.className = 'quick-reply';
@@ -117,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             quickReplies.appendChild(button);
         });
-        quickReplies.style.display = 'flex'; // Use flex to align buttons if needed
+        quickReplies.style.display = 'flex';
     }
 
     function enableSound() {
@@ -139,9 +135,7 @@ document.addEventListener("DOMContentLoaded", function() {
         introScreen.style.display = 'none';
         document.querySelector(".chat-container").style.display = "block";
         if (firstExchange) {
-            // Simulate sending a message to trigger welcome message and quick replies
             sendMessageToBot('');
         }
     });
 });
-
