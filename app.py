@@ -93,7 +93,7 @@ def call_openai_api(message):
                 {"role": "system", "content": "You are a helpful assistant."},
                 {"role": "user", "content": message}
             ],
-            max_tokens=300,
+            max_tokens=150,
             temperature=0.2
         )
 
