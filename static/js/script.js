@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
-    let firstExchange = localStorage.getItem('firstExchange') === 'true';
+    let firstExchange = localStorage.getItem('firstExchange') !== 'false';
     let lastQuickReplies = [];
 
     const chatForm = document.getElementById("chatForm");
@@ -63,15 +63,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         typingAnimation.style.display = "none";
-        appendMessageToChat("Bot", data.reply);
-        if (data.quick_replies && firstExchange) {
-            displayQuickReplies(data.quick_replies);
+        if (firstExchange) {
+            // Set firstExchange to false immediately to prevent race conditions
             firstExchange = false;
             localStorage.setItem('firstExchange', 'false');
+            
+            appendMessageToChat("Bot", data.reply);
+            if (data.quick_replies) {
+                displayQuickReplies(data.quick_replies);
+            }
+        } else {
+            // If it's not the first exchange, display subsequent messages without quick replies
+            if (data.reply) {
+                appendMessageToChat("Bot", data.reply);
+            }
         }
         playReceiveSound();
     }
-
+    
+    
     function pollForResponse(user_id) {
         setTimeout(() => {
             fetch(`/check_response?user_id=${user_id}`)
