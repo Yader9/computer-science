@@ -84,12 +84,11 @@ def send_welcome_message(context):
     return welcome_message, quick_replies
 
 # This function now only initializes the background thread and stores the request
-def handle_chatbot_conversation(message, user_id):
-    """
-    Handle the conversation with the chatbot by initiating OpenAI API call in a background thread.
-    """
-    # Initiate the OpenAI API call in a separate thread
-    thread = threading.Thread(target=call_openai_api, args=(message, user_id))
+
+
+def handle_chatbot_conversation(user_id):
+    # Initiate the OpenAI API call in a separate thread without the message argument
+    thread = threading.Thread(target=call_openai_api, args=(user_id,))
     thread.start()
     return {"status": "pending", "user_id": user_id}
 
@@ -101,11 +100,13 @@ def call_openai_api(user_id):
         {"role": "system", "content": "You are a helpful assistant."}
     ]
 
-    # Add the last 5 messages from the user context to maintain the conversation state
-    user_messages = user_context[user_id]['previous_questions']
-    context_messages.extend([
-        {"role": "user", "content": msg} for msg in user_messages
-    ])
+    # Ensure the user's previous questions exist in the context
+    if 'previous_questions' in user_context[user_id]:
+        # Add the last 5 messages or fewer from the user context to maintain the conversation state
+        context_messages.extend([
+            {"role": "user", "content": msg}
+            for msg in user_context[user_id]['previous_questions'][-5:]
+        ])
 
     try:
         response = openai.ChatCompletion.create(
@@ -116,14 +117,10 @@ def call_openai_api(user_id):
         )
         # Store the response
         openai_responses[user_id] = {
-            "status": "completed",
-            "response": response.choices[0].message['content']
-        }
+            "status": "completed", "response": response.choices[0].message['content']}
     except OpenAIError as e:
         openai_responses[user_id] = {
-            "status": "error",
-            "error_message": str(e)
-        }
+            "status": "error", "error_message": str(e)}
 
 # Endpoint for checking the status of the OpenAI API response
 
@@ -164,7 +161,7 @@ def chatbot():
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
 
     # If a welcome message has already been sent, initiate the conversation
-    result = handle_chatbot_conversation(message, user_id)
+    result = handle_chatbot_conversation(user_id)
     return jsonify(result)
 
 
