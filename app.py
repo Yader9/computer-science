@@ -76,12 +76,20 @@ def get_or_create_context(user_id, message):
 
 
 # Function to send the welcome message
-def send_welcome_message(context):
-    language = context["language_preference"]
-    welcome_message = '¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?' if language == 'spanish' else 'Welcome to the PCB Chatbot! How can I assist you today?'
-    context['received_welcome'] = True
-    quick_replies = get_quick_replies(language)
-    return welcome_message, quick_replies
+# Function to send the welcome message and quick replies only once
+def send_welcome_message(context, user_id):
+    if not context.get('received_welcome', False):
+        # Send quick replies for the first time
+        language = context["language_preference"]
+        welcome_message = '¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?' if language == 'spanish' else 'Welcome to the PCB Chatbot! How can I assist you today?'
+        quick_replies = get_quick_replies(language)
+        # Set the received_welcome flag to True to prevent future sends
+        context['received_welcome'] = True
+        user_context[user_id] = context  # Update the global context
+        return {'reply': welcome_message, 'quick_replies': quick_replies}
+    else:
+        # Quick replies have already been sent; return without them
+        return {'reply': 'How can I assist you further?'}
 
 # New function to prepare the context messages
 
@@ -162,12 +170,13 @@ def chatbot():
 
     data = request.get_json()
     message = data['message']
+    user_id = session.get('user_id')
 
     context = get_or_create_context(user_id, message)
     if not context.get('received_welcome', False):
         # Update the context to reflect that welcome message will be sent
         context['received_welcome'] = True
-        welcome_message, quick_replies = send_welcome_message(context)
+        welcome_message, quick_replies = send_welcome_message(context, user_id)
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
     else:
         # Continue with the normal chatbot conversation
