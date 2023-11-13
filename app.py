@@ -75,7 +75,6 @@ def get_or_create_context(user_id, message):
     return user_context[user_id]
 
 
-# Function to send the welcome message
 # Function to send the welcome message and quick replies only once
 def send_welcome_message(context, user_id):
     if not context.get('received_welcome', False):
@@ -86,10 +85,11 @@ def send_welcome_message(context, user_id):
         # Set the received_welcome flag to True to prevent future sends
         context['received_welcome'] = True
         user_context[user_id] = context  # Update the global context
-        return {'reply': welcome_message, 'quick_replies': quick_replies}
+        return welcome_message, quick_replies  # Ensure two values are returned
     else:
         # Quick replies have already been sent; return without them
-        return {'reply': 'How can I assist you further?'}
+        return 'How can I assist you further?', []  # Return an empty list for quick replies
+
 
 # New function to prepare the context messages
 
@@ -170,13 +170,12 @@ def chatbot():
 
     data = request.get_json()
     message = data['message']
-    user_id = session.get('user_id')
 
     context = get_or_create_context(user_id, message)
     if not context.get('received_welcome', False):
+        welcome_message, quick_replies = send_welcome_message(context, user_id)
         # Update the context to reflect that welcome message will be sent
         context['received_welcome'] = True
-        welcome_message, quick_replies = send_welcome_message(context, user_id)
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
     else:
         # Continue with the normal chatbot conversation
