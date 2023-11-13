@@ -83,44 +83,55 @@ def send_welcome_message(context):
     quick_replies = get_quick_replies(language)
     return welcome_message, quick_replies
 
-# This function now only initializes the background thread and stores the request
+# New function to prepare the context messages
 
 
-def handle_chatbot_conversation(user_id):
-    # Initiate the OpenAI API call in a separate thread without the message argument
-    thread = threading.Thread(target=call_openai_api, args=(user_id,))
+def prepare_context_messages(user_id):
+    # This will include the system message and the last five messages from the user
+    context_messages = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ] + [
+        {"role": "user", "content": msg}
+        for msg in user_context[user_id]['previous_questions'][-5:]
+    ]
+    return context_messages
+
+# Modified function to handle the chatbot conversation by starting a new thread
+
+
+def handle_chatbot_conversation(user_id, message):
+    # Update the user context with the new message
+    get_or_create_context(user_id, message)
+    context_messages = prepare_context_messages(user_id)
+
+    # Initiate the OpenAI API call in a separate thread
+    thread = threading.Thread(target=call_openai_api,
+                              args=(user_id, context_messages))
     thread.start()
     return {"status": "pending", "user_id": user_id}
 
-# The call_openai_api function is now a thread's target; it stores responses globally
+# Modified function to call the OpenAI API with the provided context messages
 
 
-def call_openai_api(user_id):
-    context_messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ]
-
-    # Ensure the user's previous questions exist in the context
-    if 'previous_questions' in user_context[user_id]:
-        # Add the last 5 messages or fewer from the user context to maintain the conversation state
-        context_messages.extend([
-            {"role": "user", "content": msg}
-            for msg in user_context[user_id]['previous_questions'][-5:]
-        ])
-
+def call_openai_api(user_id, context_messages):
     try:
+        # Call OpenAI API with the context messages
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=context_messages,
-            max_tokens=200,
+            max_tokens=150,
             temperature=0.2
         )
-        # Store the response
+        # Store the response in the global dictionary
         openai_responses[user_id] = {
-            "status": "completed", "response": response.choices[0].message['content']}
+            "status": "completed",
+            "response": response.choices[0].message['content']
+        }
     except OpenAIError as e:
         openai_responses[user_id] = {
-            "status": "error", "error_message": str(e)}
+            "status": "error",
+            "error_message": str(e)
+        }
 
 # Endpoint for checking the status of the OpenAI API response
 
@@ -151,17 +162,9 @@ def chatbot():
 
     data = request.get_json()
     message = data['message']
-    context = get_or_create_context(user_id, message)
 
-    if not context.get('received_welcome', False):
-        welcome_message, quick_replies = send_welcome_message(context)
-        # Set the received_welcome flag
-        context['received_welcome'] = True
-        # Return the welcome message and quick replies
-        return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
-
-    # If a welcome message has already been sent, initiate the conversation
-    result = handle_chatbot_conversation(user_id)
+    # Moved context updating into handle_chatbot_conversation
+    result = handle_chatbot_conversation(user_id, message)
     return jsonify(result)
 
 

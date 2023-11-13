@@ -63,24 +63,25 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         typingAnimation.style.display = "none";
-        if (firstExchange) {
-            // Set firstExchange to false immediately to prevent race conditions
+        
+        // Check if it's the first exchange and if quick replies are available
+        if (firstExchange && data.quick_replies && data.quick_replies.length > 0) {
+            // Display welcome message and quick replies
+            appendMessageToChat("Bot", data.reply);
+            displayQuickReplies(data.quick_replies);
+            
+            // Now that the welcome message and quick replies have been handled,
+            // set firstExchange to false and update localStorage
             firstExchange = false;
             localStorage.setItem('firstExchange', 'false');
-            
-            appendMessageToChat("Bot", data.reply);
-            if (data.quick_replies) {
-                displayQuickReplies(data.quick_replies);
-            }
         } else {
-            // If it's not the first exchange, display subsequent messages without quick replies
+            // For all other messages, just display them
             if (data.reply) {
                 appendMessageToChat("Bot", data.reply);
             }
         }
         playReceiveSound();
     }
-    
     
     function pollForResponse(user_id) {
         setTimeout(() => {
