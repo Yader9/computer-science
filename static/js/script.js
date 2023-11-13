@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
-    let firstExchange = true;
+    let firstExchange = localStorage.getItem('firstExchange') === 'true';
     let lastQuickReplies = [];
 
     const chatForm = document.getElementById("chatForm");
@@ -50,22 +50,26 @@ document.addEventListener("DOMContentLoaded", function() {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'pending') {
-                // Poll for response using the user_id returned by the server
                 pollForResponse(data.user_id);
             } else {
-                // Handle immediate response here if necessary
-                typingAnimation.style.display = "none";
-                appendMessageToChat("Bot", data.reply);
-                if (data.quick_replies) {
-                    displayQuickReplies(data.quick_replies);
-                }
-                playReceiveSound();
+                processBotResponse(data);
             }
         })
         .catch(error => {
             console.error("Error:", error);
             typingAnimation.style.display = "none";
         });
+    }
+
+    function processBotResponse(data) {
+        typingAnimation.style.display = "none";
+        appendMessageToChat("Bot", data.reply);
+        if (data.quick_replies && firstExchange) {
+            displayQuickReplies(data.quick_replies);
+            firstExchange = false;
+            localStorage.setItem('firstExchange', 'false');
+        }
+        playReceiveSound();
     }
 
     function pollForResponse(user_id) {

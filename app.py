@@ -70,7 +70,6 @@ def send_welcome_message(context):
     return welcome_message, quick_replies
 
 # This function now only initializes the background thread and stores the request
-
 def handle_chatbot_conversation(message, user_id):
     """
     Handle the conversation with the chatbot by initiating OpenAI API call in a background thread.
@@ -101,7 +100,6 @@ def call_openai_api(message, user_id):
         openai_responses[user_id] = {"status": "error", "error_message": str(e)}
 
 # Endpoint for checking the status of the OpenAI API response
-
 @app.route('/check_response', methods=['GET'])
 def check_response():
     user_id = request.args.get('user_id')
@@ -110,44 +108,34 @@ def check_response():
         return jsonify(openai_responses.pop(user_id))
     return jsonify({"status": "pending"})
 
-
 @app.route('/')
 def index():
     return render_template('chatbot_interface.html')
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
-    user_id = session.get('user_id', os.urandom(24).hex())
-    session['user_id'] = user_id
+    user_id = session.get('user_id')
+    if not user_id:
+        user_id = os.urandom(24).hex()
+        session['user_id'] = user_id
 
     if rate_limit_exceeded(user_id):
         return jsonify({'error': 'Rate limit exceeded'}), 429
 
-    try:
-        data = request.get_json()
-        message = data['message']
-        # Make sure to update the context with the new message
-        context = get_or_create_context(user_id, message)
+    data = request.get_json()
+    message = data['message']
+    context = get_or_create_context(user_id, message)
 
-        if not context['received_welcome']:
-            welcome_message, quick_replies = send_welcome_message(context)
-            # Store the result including the welcome message and quick replies
-            result = {'reply': welcome_message, 'quick_replies': quick_replies}
-        else:
-            # If the welcome message has already been sent, start the chatbot conversation
-            result = handle_chatbot_conversation(message, user_id)
-        
-        # Return the immediate response to the frontend
-        return jsonify(result)
+    if not context.get('received_welcome', False):
+        welcome_message, quick_replies = send_welcome_message(context)
+        # Set the received_welcome flag
+        context['received_welcome'] = True
+        # Return the welcome message and quick replies
+        return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
 
-    except ValueError as ve:
-        # Handle specific ValueError that you expect may happen
-        logging.error("ValueError handling /chatbot request: %s", ve)
-        return jsonify({'error': 'Invalid input received'}), 400
-    except Exception as e:
-        # This is a catch-all for unexpected exceptions
-        logging.error("Unexpected error handling /chatbot request: %s", e)
-        return jsonify({'error': 'An error occurred while processing your request'}), 500
+    # If a welcome message has already been sent, initiate the conversation
+    result = handle_chatbot_conversation(message, user_id)
+    return jsonify(result)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
