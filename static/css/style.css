@@ -144,22 +144,21 @@ button#sendButton:hover {
 
 /* Chatbot title animation */
 .chatbot-title {
-    font-size: 32px;
+    font-size: 24px; /* Keep the font size that you prefer */
     color: #007BFF;
     text-align: center;
     position: absolute;
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 32px); /* Reduced width to ensure padding */
+    width: calc(100% - 32px);
     z-index: 1000;
-    padding: 16px; /* Add padding to ensure it doesn't touch the edges */
-    box-sizing: border-box; /* Ensures padding is included in the width */
-    font-size: 24px;
+    padding: 16px;
+    box-sizing: border-box;
     overflow: hidden;
     white-space: nowrap;
     border-right: .2em solid;
-    animation: typing 2s steps(30, end), blink 0.5s step-end infinite; 
+    animation: typing 2s steps(30, end), blink 0.5s step-end infinite;
 }
 
 @keyframes typing {
