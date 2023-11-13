@@ -149,8 +149,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const introScreen = document.getElementById('introScreen');
         introScreen.style.display = 'none';
         document.querySelector(".chat-container").style.display = "block";
-        if (firstExchange) {
-            sendMessageToBot('');
-        }
-    });
-});
+        // Do not send any message here, just show the chat interface.
+    })
+})

@@ -163,9 +163,16 @@ def chatbot():
     data = request.get_json()
     message = data['message']
 
-    # Moved context updating into handle_chatbot_conversation
-    result = handle_chatbot_conversation(user_id, message)
-    return jsonify(result)
+    context = get_or_create_context(user_id, message)
+    if not context.get('received_welcome', False):
+        # Update the context to reflect that welcome message will be sent
+        context['received_welcome'] = True
+        welcome_message, quick_replies = send_welcome_message(context)
+        return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
+    else:
+        # Continue with the normal chatbot conversation
+        result = handle_chatbot_conversation(user_id, message)
+        return jsonify(result)
 
 
 if __name__ == '__main__':
