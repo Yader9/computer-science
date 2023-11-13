@@ -28,14 +28,19 @@ openai.api_key = os.environ.get('OPENAI_API_KEY')
 user_requests = {}
 
 # Function to detect the language of the message
+
+
 def detect_language(message):
     """
     Detect the language of a given message.
     """
-    spanish_keywords = ['hola', 'buenas', 'ayuda', 'día', 'gracias', 'por favor']
+    spanish_keywords = ['hola', 'buenas',
+                        'ayuda', 'día', 'gracias', 'por favor']
     return 'spanish' if any(word in message.lower() for word in spanish_keywords) else 'english'
 
 # Function to get quick replies based on the user's language preference
+
+
 def get_quick_replies(language):
     if language == 'spanish':
         return ['¿Qué es un PCB?', 'Cuéntame sobre electrónica', '¿Cómo se hacen los PCBs?']
@@ -43,23 +48,32 @@ def get_quick_replies(language):
         return ['What is a PCB?', 'Tell me about electronics', 'How are PCBs made?']
 
 # Function to check if rate limit has been exceeded
+
+
 def rate_limit_exceeded(user_id):
     user_requests[user_id] = user_requests.get(user_id, 0) + 1
     if user_requests[user_id] > 50:  # Limit per user
         return True
     return False
 
-# Function to get or create user context
+# Function to get or create user context and update it with the new message
+
+
 def get_or_create_context(user_id, message):
     if user_id not in user_context:
-        language = detect_language(message)
         user_context[user_id] = {
-            "language_preference": language,
-            "previous_questions": [],
+            "language_preference": detect_language(message),
+            "previous_questions": [message],  # Start with the first message
             "received_welcome": False,
             "creation_time": datetime.now()
         }
+    else:
+        # Append the new message and ensure only the last 5 messages are kept
+        user_context[user_id]['previous_questions'].append(message)
+        user_context[user_id]['previous_questions'] = user_context[user_id]['previous_questions'][-5:]
+
     return user_context[user_id]
+
 
 # Function to send the welcome message
 def send_welcome_message(context):
@@ -80,26 +94,40 @@ def handle_chatbot_conversation(message, user_id):
     return {"status": "pending", "user_id": user_id}
 
 # The call_openai_api function is now a thread's target; it stores responses globally
-def call_openai_api(message, user_id):
-    """
-    Call the OpenAI API and store the response in a global dictionary.
-    """
+
+
+def call_openai_api(user_id):
+    context_messages = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ]
+
+    # Add the last 5 messages from the user context to maintain the conversation state
+    user_messages = user_context[user_id]['previous_questions']
+    context_messages.extend([
+        {"role": "user", "content": msg} for msg in user_messages
+    ])
+
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": message}
-            ],
-            max_tokens=150,
+            messages=context_messages,
+            max_tokens=200,
             temperature=0.2
         )
         # Store the response
-        openai_responses[user_id] = {"status": "completed", "response": response.choices[0].message['content']}
+        openai_responses[user_id] = {
+            "status": "completed",
+            "response": response.choices[0].message['content']
+        }
     except OpenAIError as e:
-        openai_responses[user_id] = {"status": "error", "error_message": str(e)}
+        openai_responses[user_id] = {
+            "status": "error",
+            "error_message": str(e)
+        }
 
 # Endpoint for checking the status of the OpenAI API response
+
+
 @app.route('/check_response', methods=['GET'])
 def check_response():
     user_id = request.args.get('user_id')
@@ -108,9 +136,11 @@ def check_response():
         return jsonify(openai_responses.pop(user_id))
     return jsonify({"status": "pending"})
 
+
 @app.route('/')
 def index():
     return render_template('chatbot_interface.html')
+
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
@@ -136,6 +166,7 @@ def chatbot():
     # If a welcome message has already been sent, initiate the conversation
     result = handle_chatbot_conversation(message, user_id)
     return jsonify(result)
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
