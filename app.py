@@ -4,7 +4,7 @@ This module provides an endpoint for a Chatbot service to answer PCB-related que
 
 import logging
 import os
-import concurrent.futures
+import threading
 from datetime import datetime
 from flask import Flask, request, jsonify, session, render_template
 import openai
@@ -23,6 +23,7 @@ Session(app)
 
 # Global variables
 user_context = {}
+openai_responses = {}
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 user_requests = {}
 
@@ -68,24 +69,22 @@ def send_welcome_message(context):
     quick_replies = get_quick_replies(language)
     return welcome_message, quick_replies
 
-# Function to handle the conversation with the chatbot
-def handle_chatbot_conversation(message, context):
-    """
-    Handle the conversation with the chatbot and return the reply and quick replies.
-    """
-    reply, quick_replies = "", []
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        future = executor.submit(call_openai_api, message)
-        try:
-            choice_content = future.result(timeout=10)  # 10-second timeout
-            reply = choice_content.strip() if choice_content else "Sorry, I couldn't understand that."
-        except concurrent.futures.TimeoutError:
-            logging.error("OpenAI API call timed out for user %s", context['user_id'])
-            reply = "The request timed out"
-    return reply, quick_replies
+# This function now only initializes the background thread and stores the request
 
-# Function to call the OpenAI API asynchronously
-def call_openai_api(message):
+def handle_chatbot_conversation(message, user_id):
+    """
+    Handle the conversation with the chatbot by initiating OpenAI API call in a background thread.
+    """
+    # Initiate the OpenAI API call in a separate thread
+    thread = threading.Thread(target=call_openai_api, args=(message, user_id))
+    thread.start()
+    return {"status": "pending", "user_id": user_id}
+
+# The call_openai_api function is now a thread's target; it stores responses globally
+def call_openai_api(message, user_id):
+    """
+    Call the OpenAI API and store the response in a global dictionary.
+    """
     try:
         response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -96,11 +95,21 @@ def call_openai_api(message):
             max_tokens=150,
             temperature=0.2
         )
-
-        return response.choices[0].message['content']
+        # Store the response
+        openai_responses[user_id] = {"status": "completed", "response": response.choices[0].message['content']}
     except OpenAIError as e:
-        logging.error("OpenAI API error: %s", e)
-    return ""
+        openai_responses[user_id] = {"status": "error", "error_message": str(e)}
+
+# Endpoint for checking the status of the OpenAI API response
+
+@app.route('/check_response', methods=['GET'])
+def check_response():
+    user_id = request.args.get('user_id')
+    if user_id in openai_responses:
+        # If the response is ready, pop it from the dictionary and return it
+        return jsonify(openai_responses.pop(user_id))
+    return jsonify({"status": "pending"})
+
 
 @app.route('/')
 def index():
@@ -117,14 +126,19 @@ def chatbot():
     try:
         data = request.get_json()
         message = data['message']
+        # Make sure to update the context with the new message
         context = get_or_create_context(user_id, message)
 
-        if context['received_welcome']:
-            reply, quick_replies = handle_chatbot_conversation(message, context)
+        if not context['received_welcome']:
+            welcome_message, quick_replies = send_welcome_message(context)
+            # Store the result including the welcome message and quick replies
+            result = {'reply': welcome_message, 'quick_replies': quick_replies}
         else:
-            reply, quick_replies = send_welcome_message(context)
-
-        return jsonify({'reply': reply, 'quick_replies': quick_replies})
+            # If the welcome message has already been sent, start the chatbot conversation
+            result = handle_chatbot_conversation(message, user_id)
+        
+        # Return the immediate response to the frontend
+        return jsonify(result)
 
     except ValueError as ve:
         # Handle specific ValueError that you expect may happen

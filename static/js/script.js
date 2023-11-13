@@ -8,24 +8,12 @@ document.addEventListener("DOMContentLoaded", function() {
     let firstExchange = true;
     let lastQuickReplies = [];
 
-    let observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-            if (mutation.attributeName === "style") {
-                console.log("quickReplies style changed to:", quickReplies.style.display);
-            }
-        });
-    });
-
     const chatForm = document.getElementById("chatForm");
     chatForm.addEventListener("submit", function(event) {
         event.preventDefault();
         sendInputMessage();
     });
-    
-    observer.observe(quickReplies, {
-        attributes: true // configure it to listen to attribute changes
-    });
-    
+
     chatInput.addEventListener("keydown", function(event) {
         if (event.keyCode === 13 && !event.shiftKey) {
             event.preventDefault();
@@ -37,7 +25,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function sendInputMessage() {
         console.log("Sending input message...");
-
         quickReplies.style.display = 'none';
         const message = chatInput.value.trim();
         if (message) {
@@ -54,37 +41,55 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Sending message to bot...");
         appendMessageToChat("User", message);
         typingAnimation.style.display = "block";
-    
-        setTimeout(() => {
-            fetch("/chatbot", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: message })
-            })
-            .then(response => response.json())
-            .then(data => {
-                typingAnimation.style.display = "none";
-                const reply = data.reply;
-                appendMessageToChat("Bot", reply);
 
+        fetch("/chatbot", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: message })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'pending') {
+                // Poll for response using the user_id returned by the server
+                pollForResponse(data.user_id);
+            } else {
+                // Handle immediate response here if necessary
+                typingAnimation.style.display = "none";
+                appendMessageToChat("Bot", data.reply);
                 if (data.quick_replies) {
-                    console.log("Displaying quick replies...");
                     displayQuickReplies(data.quick_replies);
                 }
+                playReceiveSound();
+            }
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            typingAnimation.style.display = "none";
+        });
+    }
 
-                if (firstExchange) {
-                    firstExchange = false;
+    function pollForResponse(user_id) {
+        setTimeout(() => {
+            fetch(`/check_response?user_id=${user_id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'completed') {
+                    typingAnimation.style.display = "none";
+                    appendMessageToChat("Bot", data.response);
+                    playReceiveSound();
+                } else if (data.status === 'error') {
+                    console.error("Error from OpenAI:", data.error_message);
+                    typingAnimation.style.display = "none";
+                } else {
+                    // Continue polling if the status is still 'pending'
+                    pollForResponse(user_id);
                 }
-
-                const receiveSound = document.getElementById("sendSound");
-                receiveSound.volume = 0.5;
-                receiveSound.play();
             })
             .catch(error => {
-                console.error("Error:", error);
+                console.error("Error while polling for response:", error);
                 typingAnimation.style.display = "none";
             });
-        }, 1000);
+        }, 3000); // Poll every 3 seconds
     }
 
     function appendMessageToChat(sender, message) {
@@ -98,8 +103,6 @@ document.addEventListener("DOMContentLoaded", function() {
     function displayQuickReplies(replies) {
         // Convert both arrays to strings and compare
         if (JSON.stringify(replies) !== JSON.stringify(lastQuickReplies)) {
-            console.log("Displaying quick replies...");
-    
             // Clear the current quick replies
             while (quickReplies.firstChild) {
                 quickReplies.removeChild(quickReplies.firstChild);
@@ -117,18 +120,26 @@ document.addEventListener("DOMContentLoaded", function() {
                 };
                 quickReplies.appendChild(btn);
             });
-            
+
             quickReplies.style.display = 'block';
-            lastQuickReplies = replies.slice();  // Store a copy of the current replies
+            lastQuickReplies = replies.slice(); // Store a copy of the current replies
         }
     }
-    
 
     function enableSound() {
-        console.log("Enabling sound...");
+        // This function ensures that the sound is enabled by the browser
         const receiveSound = document.getElementById("sendSound");
         receiveSound.play();
         receiveSound.pause();
+    }
+
+    function playReceiveSound() {
+        // Play a sound when the message from the bot is received
+        const receiveSound = document.getElementById("sendSound");
+        if (receiveSound) {
+            receiveSound.volume = 0.5;
+            receiveSound.play();
+        }
     }
 
     document.getElementById("startChatButton").addEventListener("click", function() {
