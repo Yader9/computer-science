@@ -66,19 +66,16 @@ document.addEventListener("DOMContentLoaded", function() {
         
         // Check if it's the first exchange and if quick replies are available
         if (firstExchange && data.quick_replies && data.quick_replies.length > 0) {
-            // Display welcome message and quick replies
-            appendMessageToChat("Bot", data.reply);
             displayQuickReplies(data.quick_replies);
             
-            // Now that the welcome message and quick replies have been handled,
+            // Now that the quick replies have been handled,
             // set firstExchange to false and update localStorage
             firstExchange = false;
             localStorage.setItem('firstExchange', 'false');
-        } else {
-            // For all other messages, just display them
-            if (data.reply) {
-                appendMessageToChat("Bot", data.reply);
-            }
+        }
+        
+        if (data.reply) {
+            appendMessageToChat("Bot", data.reply);
         }
         playReceiveSound();
     }
@@ -107,49 +104,29 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3000); // Poll every 3 seconds
     }
 
-    function appendMessageToChat(sender, message) {
-        const messageDiv = document.createElement("div");
-        messageDiv.className = sender === "User" ? "user-message" : "bot-message";
-        messageDiv.textContent = message;
-        chatOutput.appendChild(messageDiv);
-        chatOutput.scrollTop = chatOutput.scrollHeight;
-    }
-
     function displayQuickReplies(replies) {
-        // Convert both arrays to strings and compare
-        if (JSON.stringify(replies) !== JSON.stringify(lastQuickReplies)) {
-            // Clear the current quick replies
-            while (quickReplies.firstChild) {
-                quickReplies.removeChild(quickReplies.firstChild);
-            }
-    
-            // Display new quick replies and update the stored ones
-            replies.forEach(reply => {
-                const btn = document.createElement('div');
-                btn.className = 'quick-reply';
-                btn.innerText = reply;
-                btn.onclick = function() {
-                    chatInput.value = reply;
-                    sendInputMessage();
-                    quickReplies.style.display = 'none';
-                };
-                quickReplies.appendChild(btn);
+        quickReplies.innerHTML = ''; // Clear previous quick replies
+        replies.forEach(reply => {
+            const button = document.createElement('button');
+            button.className = 'quick-reply';
+            button.textContent = reply;
+            button.addEventListener('click', function() {
+                chatInput.value = reply;
+                sendInputMessage();
+                quickReplies.style.display = 'none';
             });
-
-            quickReplies.style.display = 'block';
-            lastQuickReplies = replies.slice(); // Store a copy of the current replies
-        }
+            quickReplies.appendChild(button);
+        });
+        quickReplies.style.display = 'flex'; // Use flex to align buttons if needed
     }
 
     function enableSound() {
-        // This function ensures that the sound is enabled by the browser
         const receiveSound = document.getElementById("sendSound");
         receiveSound.play();
         receiveSound.pause();
     }
 
     function playReceiveSound() {
-        // Play a sound when the message from the bot is received
         const receiveSound = document.getElementById("sendSound");
         if (receiveSound) {
             receiveSound.volume = 0.5;
@@ -159,9 +136,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.getElementById("startChatButton").addEventListener("click", function() {
         const introScreen = document.getElementById('introScreen');
-        if (introScreen) {
-            introScreen.style.display = 'none';
-        }
+        introScreen.style.display = 'none';
         document.querySelector(".chat-container").style.display = "block";
+        if (firstExchange) {
+            // Simulate sending a message to trigger welcome message and quick replies
+            sendMessageToBot('');
+        }
     });
 });
+
