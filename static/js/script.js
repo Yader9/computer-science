@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const sendButton = document.getElementById("sendButton");
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
-    let soundInitialized = false;
     let firstExchangeComplete = localStorage.getItem('firstExchangeComplete') === 'true';
     
     const chatForm = document.getElementById("chatForm");
