@@ -106,9 +106,9 @@ def send_welcome_message(user_id):
 # New function to prepare the context messages
 
 def prepare_context_messages(user_id):
-    # Check if user_id exists in the user_context dictionary
-    if user_id not in user_context:
-        logging.error('user_id %s not found in user_context', user_id)
+    # Check if user_id exists in the user_context within the session
+    if 'user_context' not in session or user_id not in session['user_context']:
+        logging.error('user_id %s not found in session user_context', user_id)
         return [{"role": "system", "content": "Please start a new conversation."}]
 
     # Otherwise, prepare the context messages
@@ -116,7 +116,7 @@ def prepare_context_messages(user_id):
         {"role": "system", "content": "You are a helpful assistant."}
     ] + [
         {"role": "user", "content": msg}
-        for msg in user_context[user_id].get('previous_questions', [])[-5:]
+        for msg in session['user_context'][user_id].get('previous_questions', [])[-5:]
     ]
     return context_messages
 
