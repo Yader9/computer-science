@@ -65,18 +65,22 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function processBotResponse(data) {
-        console.log('Processing bot response:', data);
-
+        console.log('Processing bot response:', data); // Debugging line
+    
         typingAnimation.style.display = "none";
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
-        if (data.quick_replies && data.quick_replies.length > 0) {
+        // Check if it's the first exchange and if quick replies should be displayed
+        if (!localStorage.getItem('quickRepliesDisplayed') && data.quick_replies && data.quick_replies.length > 0) {
             displayQuickReplies(data.quick_replies);
+            // Set a flag that quick replies have been displayed
+            localStorage.setItem('quickRepliesDisplayed', 'true');
         }
-
+    
         playReceiveSound();
     }
+    
     
     function pollForResponse(user_id) {
         setTimeout(() => {
