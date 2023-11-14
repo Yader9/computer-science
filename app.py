@@ -6,7 +6,9 @@ import logging
 import os
 import threading
 from datetime import datetime
+from threading import Lock
 from flask import Flask, request, jsonify, session, render_template
+from flask_cors import CORS
 import openai
 from openai.error import OpenAIError
 from flask_session import Session
@@ -16,14 +18,18 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Initialize Flask app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
 Session(app)
+CORS(app)  # Enable CORS
+
 
 # Global variables
 user_context = {}
 openai_responses = {}
+openai_responses_lock = Lock()  # Lock for thread safety
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 user_requests = {}
 
@@ -139,10 +145,11 @@ def call_openai_api(user_id, context_messages):
     # Check if context_messages is empty and log an error if so
     if not context_messages:
         logging.error('Empty context messages for user_id %s', user_id)
-        openai_responses[user_id] = {
-            "status": "error",
-            "error_message": "Empty context messages"
-        }
+        with openai_responses_lock:  # Use the lock when modifying the shared resource
+            openai_responses[user_id] = {
+                "status": "error",
+                "error_message": "Empty context messages"
+            }
         return
 
     try:
@@ -191,7 +198,7 @@ def chatbot():
         session['user_id'] = user_id
 
     if rate_limit_exceeded(user_id):
-        return jsonify({'error': 'Rate limit exceeded'}), 429
+        return jsonify({'status': 'error', 'error_message': 'Rate limit exceeded'}), 429
 
     data = request.get_json()
     message = data['message']
