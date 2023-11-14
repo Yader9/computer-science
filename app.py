@@ -60,23 +60,29 @@ def rate_limit_exceeded(user_id):
 
 
 def get_or_create_context(user_id, message):
-    if user_id not in user_context:
-        user_context[user_id] = {
+    # If there's no 'user_context' key in the session, or the user_id is not in the session's 'user_context', create a new context
+    if 'user_context' not in session or user_id not in session['user_context']:
+        session['user_context'] = session.get('user_context', {})
+        session['user_context'][user_id] = {
             "language_preference": detect_language(message),
-            "previous_questions": [message],  # Start with the first message
+            "previous_questions": [message],
             "received_welcome": False,
-            "creation_time": datetime.now()
+            "creation_time": datetime.now().isoformat()
         }
     else:
         # Append the new message and ensure only the last 5 messages are kept
-        user_context[user_id]['previous_questions'].append(message)
-        user_context[user_id]['previous_questions'] = user_context[user_id]['previous_questions'][-5:]
+        user_context = session['user_context'][user_id]
+        user_context['previous_questions'].append(message)
+        user_context['previous_questions'] = user_context['previous_questions'][-5:]
 
-    return user_context[user_id]
+    # Ensure the session is marked as modified so that it gets saved
+    session.modified = True
+    return session['user_context'][user_id]
 
 
-def send_welcome_message(context, user_id):
-    if not context.get('received_welcome', False):
+def send_welcome_message(user_id):
+    context = session['user_context'][user_id]
+    if not context['received_welcome']:
         # Send quick replies for the first time
         language = context["language_preference"]
         welcome_message = ('¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
@@ -85,8 +91,7 @@ def send_welcome_message(context, user_id):
         quick_replies = get_quick_replies(language)
         # Set the received_welcome flag to True to prevent future sends
         context['received_welcome'] = True
-        # Update the global context
-        user_context[user_id] = context
+        session.modified = True
         return welcome_message, quick_replies
     else:
         # Quick replies have already been sent; return without them
@@ -177,7 +182,7 @@ def chatbot():
     context = get_or_create_context(user_id, message)
     
     if not context.get('received_welcome', False):
-        welcome_message, quick_replies = send_welcome_message(context, user_id)
+        welcome_message, quick_replies = send_welcome_message(user_id)
         # Ensure that context changes are stored in the session or database
         session['user_context'] = user_context  # This line is new
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
