@@ -5,11 +5,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
     // If the flag isn't set, it means it's the user's first visit/interaction.
-    if (localStorage.getItem('firstExchangeComplete') === null) {
-        localStorage.setItem('firstExchangeComplete', 'false');
-    }
-
-    let firstExchangeComplete = localStorage.getItem('firstExchangeComplete') === 'true';
     
     const chatForm = document.getElementById("chatForm");
     chatForm.addEventListener("submit", function(event) {
@@ -38,11 +33,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const message = chatInput.value.trim();
         if (message) {
             appendMessageToChat("User", message);
-            if (!firstExchangeComplete) {
-                // Mark the first exchange as complete to prevent future welcome messages
-                localStorage.setItem('firstExchangeComplete', 'true');
-                firstExchangeComplete = true;
-            }
             sendMessageToBot(message);
             chatInput.value = "";
         }
@@ -71,26 +61,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         console.log('Processing bot response:', data);
-    
+
         typingAnimation.style.display = "none";
-    
+        
         // Always append the bot's reply to the chat.
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
-    
-        // Check if it's the first exchange and quick replies have not been displayed yet.
-        if (!firstExchangeComplete && data.quick_replies && data.quick_replies.length > 0) {
+        
+        // Handle quick replies from the backend
+        if (data.quick_replies && data.quick_replies.length > 0) {
             displayQuickReplies(data.quick_replies);
-            // Since we've now displayed the quick replies, set the flag to true.
-            localStorage.setItem('firstExchangeComplete', 'true');
-            firstExchangeComplete = true;
         }
-    
+        
         playReceiveSound();
-    }       
+    }     
     
     function pollForResponse(user_id) {
+        // Adjust the timeout as needed based on backend processing time
         setTimeout(() => {
             fetch(`/check_response?user_id=${user_id}`)
             .then(response => response.json())
@@ -102,16 +90,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else if (data.status === 'error') {
                     console.error("Error from OpenAI:", data.error_message);
                     typingAnimation.style.display = "none";
+                    // Display some error to the user if needed
                 } else {
+                    // If the status is still pending, poll again
                     pollForResponse(user_id);
                 }
             })
             .catch(error => {
                 console.error("Error while polling for response:", error);
                 typingAnimation.style.display = "none";
+                // Optionally, handle the error (e.g., display a message to the user)
             });
-        }, 3000);
+        }, 3000); // Example: 3000ms polling interval
     }
+    
 
     function displayQuickReplies(replies) {
         quickReplies.innerHTML = '';

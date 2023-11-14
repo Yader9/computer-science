@@ -60,7 +60,6 @@ def rate_limit_exceeded(user_id):
 
 
 def get_or_create_context(user_id, message):
-    # If there's no 'user_context' key in the session, or the user_id is not in the session's 'user_context', create a new context
     if 'user_context' not in session or user_id not in session['user_context']:
         session['user_context'] = session.get('user_context', {})
         session['user_context'][user_id] = {
@@ -70,12 +69,10 @@ def get_or_create_context(user_id, message):
             "creation_time": datetime.now().isoformat()
         }
     else:
-        # Append the new message and ensure only the last 5 messages are kept
-        user_context = session['user_context'][user_id]
-        user_context['previous_questions'].append(message)
-        user_context['previous_questions'] = user_context['previous_questions'][-5:]
+        # Directly modify the session's user_context without assigning it to a local variable
+        session['user_context'][user_id]['previous_questions'].append(message)
+        session['user_context'][user_id]['previous_questions'] = session['user_context'][user_id]['previous_questions'][-5:]
 
-    # Ensure the session is marked as modified so that it gets saved
     session.modified = True
     return session['user_context'][user_id]
 
@@ -83,20 +80,22 @@ def get_or_create_context(user_id, message):
 def send_welcome_message(user_id):
     context = session['user_context'][user_id]
     if not context['received_welcome']:
-        # Send quick replies for the first time
+        # Prepare the welcome message and quick replies
         language = context["language_preference"]
         welcome_message = ('¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
                            if language == 'spanish' else
                            'Welcome to the PCB Chatbot! How can I assist you today?')
         quick_replies = get_quick_replies(language)
-        # Set the received_welcome flag to True to prevent future sends
+
+        # Update the context with the received_welcome flag
         context['received_welcome'] = True
-        session.modified = True
+        session['user_context'][user_id] = context
+        session.modified = True  # Mark session as modified to save changes
+
         return welcome_message, quick_replies
     else:
         # Quick replies have already been sent; return without them
-        return 'How can I assist you further?', []
-
+        return None, []
 
 # New function to prepare the context messages
 
@@ -169,7 +168,6 @@ def index():
 def chatbot():
     user_id = session.get('user_id')
     if not user_id:
-        # Generate a new user ID if it doesn't exist
         user_id = os.urandom(24).hex()
         session['user_id'] = user_id
 
@@ -179,17 +177,15 @@ def chatbot():
     data = request.get_json()
     message = data['message']
 
-    context = get_or_create_context(user_id, message)
-    
-    if not context.get('received_welcome', False):
-        welcome_message, quick_replies = send_welcome_message(user_id)
-        # Ensure that context changes are stored in the session or database
-        session['user_context'] = user_context  # This line is new
+    get_or_create_context(user_id, message)
+
+    welcome_message, quick_replies = send_welcome_message(user_id)
+    if welcome_message:
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
-    else:
-        # Continue with the normal chatbot conversation
-        result = handle_chatbot_conversation(user_id, message)
-        return jsonify(result)
+
+    # Continue with the normal chatbot conversation
+    result = handle_chatbot_conversation(user_id, message)
+    return jsonify(result)
 
 
 if __name__ == '__main__':
