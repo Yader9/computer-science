@@ -101,14 +101,20 @@ def send_welcome_message(user_id):
 
 
 def prepare_context_messages(user_id):
-    # This will include the system message and the last five messages from the user
-    context_messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
-    ] + [
-        {"role": "user", "content": msg}
-        for msg in user_context[user_id]['previous_questions'][-5:]
-    ]
-    return context_messages
+    # Check if user_id exists in the user_context dictionary
+    if user_id in user_context:
+        context_messages = [
+            {"role": "system", "content": "You are a helpful assistant."}
+        ] + [
+            {"role": "user", "content": msg}
+            for msg in user_context[user_id]['previous_questions'][-5:]
+        ]
+        return context_messages
+    else:
+        # Handle the case where user_id is not found, perhaps by initializing it or logging an error
+        logging.error(f'user_id {user_id} not found in user_context')
+        return []
+
 
 # Modified function to handle the chatbot conversation by starting a new thread
 
