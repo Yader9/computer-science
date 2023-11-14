@@ -105,6 +105,7 @@ def send_welcome_message(user_id):
 
 # New function to prepare the context messages
 
+
 def prepare_context_messages(user_id):
     # Check if user_id exists in the user_context within the session
     if 'user_context' not in session or user_id not in session['user_context']:
@@ -134,7 +135,8 @@ def handle_chatbot_conversation(user_id, message):
 
     # Check if context_messages is not empty before starting a new thread
     if context_messages:
-        thread = threading.Thread(target=call_openai_api, args=(user_id, context_messages))
+        thread = threading.Thread(
+            target=call_openai_api, args=(user_id, context_messages))
         thread.start()
         return {"status": "pending", "user_id": user_id}
     else:
@@ -212,8 +214,3 @@ def chatbot():
     # Continue with the normal chatbot conversation
     result = handle_chatbot_conversation(user_id, message)
     return jsonify(result)
-
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)
