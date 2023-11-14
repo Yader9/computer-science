@@ -99,41 +99,52 @@ def send_welcome_message(user_id):
 
 # New function to prepare the context messages
 
-
 def prepare_context_messages(user_id):
     # Check if user_id exists in the user_context dictionary
-    if user_id in user_context:
-        context_messages = [
-            {"role": "system", "content": "You are a helpful assistant."}
-        ] + [
-            {"role": "user", "content": msg}
-            for msg in user_context[user_id]['previous_questions'][-5:]
-        ]
-        return context_messages
-    else:
-        # Handle the case where user_id is not found, perhaps by initializing it or logging an error
-        logging.error(f'user_id {user_id} not found in user_context')
-        return []
+    if user_id not in user_context:
+        logging.error('user_id %s not found in user_context', user_id)
+        return [{"role": "system", "content": "Please start a new conversation."}]
 
-
-# Modified function to handle the chatbot conversation by starting a new thread
+    # Otherwise, prepare the context messages
+    context_messages = [
+        {"role": "system", "content": "You are a helpful assistant."}
+    ] + [
+        {"role": "user", "content": msg}
+        for msg in user_context[user_id].get('previous_questions', [])[-5:]
+    ]
+    return context_messages
 
 
 def handle_chatbot_conversation(user_id, message):
+    # Ensure user_id exists in the session before proceeding
+    if user_id not in session.get('user_context', {}):
+        # Handle the case where user_id is not in the session
+        logging.error('user_id %s is not in the session user_context', user_id)
+        return {"status": "error", "error_message": "Session error: user context not found"}
+
     # Update the user context with the new message
     get_or_create_context(user_id, message)
     context_messages = prepare_context_messages(user_id)
 
-    # Initiate the OpenAI API call in a separate thread
-    thread = threading.Thread(target=call_openai_api,
-                              args=(user_id, context_messages))
-    thread.start()
-    return {"status": "pending", "user_id": user_id}
-
-# Modified function to call the OpenAI API with the provided context messages
+    # Check if context_messages is not empty before starting a new thread
+    if context_messages:
+        thread = threading.Thread(target=call_openai_api, args=(user_id, context_messages))
+        thread.start()
+        return {"status": "pending", "user_id": user_id}
+    else:
+        return {"status": "error", "error_message": "Cannot initiate conversation with empty context"}
 
 
 def call_openai_api(user_id, context_messages):
+    # Check if context_messages is empty and log an error if so
+    if not context_messages:
+        logging.error('Empty context messages for user_id %s', user_id)
+        openai_responses[user_id] = {
+            "status": "error",
+            "error_message": "Empty context messages"
+        }
+        return
+
     try:
         # Call OpenAI API with the context messages
         response = openai.ChatCompletion.create(
@@ -148,6 +159,8 @@ def call_openai_api(user_id, context_messages):
             "response": response.choices[0].message['content']
         }
     except OpenAIError as e:
+        # Log the error and update the global dictionary
+        logging.error('OpenAI API error for user_id %s: %s', user_id, str(e))
         openai_responses[user_id] = {
             "status": "error",
             "error_message": str(e)
