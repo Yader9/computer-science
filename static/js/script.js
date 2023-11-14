@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
     let soundInitialized = false;
-    let firstExchange = localStorage.getItem('firstExchange') !== 'false';
+    let firstExchangeComplete = localStorage.getItem('firstExchangeComplete') === 'true';
     
     const chatForm = document.getElementById("chatForm");
     chatForm.addEventListener("submit", function(event) {
@@ -33,9 +33,11 @@ document.addEventListener("DOMContentLoaded", function() {
     function sendInputMessage() {
         const message = chatInput.value.trim();
         if (message) {
-            if (!soundInitialized) {
-                enableSound();
-                soundInitialized = true;
+            appendMessageToChat("User", message);
+            if (!firstExchangeComplete) {
+                // Mark the first exchange as complete to prevent future welcome messages
+                localStorage.setItem('firstExchangeComplete', 'true');
+                firstExchangeComplete = true;
             }
             sendMessageToBot(message);
             chatInput.value = "";
@@ -43,7 +45,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function sendMessageToBot(message) {
-        appendMessageToChat("User", message);
         typingAnimation.style.display = "block";
         fetch("/chatbot", {
             method: "POST",
@@ -65,30 +66,17 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function processBotResponse(data) {
-        console.log('Processing bot response:', data); // Debugging line
-
-        console.log('firstExchange before processing:', firstExchange);
+        console.log('Processing bot response:', data);
 
         typingAnimation.style.display = "none";
-        if (firstExchange) {
-            console.log('Inside firstExchange conditional'); 
-            if (data.reply) {
-                appendMessageToChat("Bot", data.reply);
-            }
-            if (data.quick_replies && data.quick_replies.length > 0) {
-                displayQuickReplies(data.quick_replies);
-                firstExchange = false; // Move this line inside the check for quick replies
-                localStorage.setItem('firstExchange', 'false');
-                console.log('firstExchange should be set to false now');
-            }
-        } else {
-            if (data.reply) {
-                appendMessageToChat("Bot", data.reply);
-            }
+        if (data.reply) {
+            appendMessageToChat("Bot", data.reply);
         }
-        playReceiveSound();
+        if (data.quick_replies && data.quick_replies.length > 0) {
+            displayQuickReplies(data.quick_replies);
+        }
 
-        console.log('firstExchange after processing:', firstExchange);
+        playReceiveSound();
     }
     
     function pollForResponse(user_id) {
