@@ -65,30 +65,22 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function processBotResponse(data) {
+        console.log('Processing bot response:', data); // Debugging line
         typingAnimation.style.display = "none";
-    
-        // If it's the first exchange, display the welcome message and quick replies
         if (firstExchange) {
-            // Display the welcome message
             if (data.reply) {
                 appendMessageToChat("Bot", data.reply);
             }
-    
-            // Display quick replies if any
             if (data.quick_replies && data.quick_replies.length > 0) {
                 displayQuickReplies(data.quick_replies);
+                firstExchange = false; // Move this line inside the check for quick replies
+                localStorage.setItem('firstExchange', 'false');
             }
-    
-            // Set firstExchange to false to ensure quick replies are only shown on the first exchange
-            firstExchange = false;
-            localStorage.setItem('firstExchange', 'false');
         } else {
-            // For subsequent messages, only display the message
             if (data.reply) {
                 appendMessageToChat("Bot", data.reply);
             }
         }
-    
         playReceiveSound();
     }
     
