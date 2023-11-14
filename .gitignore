@@ -1,1 +1,2 @@
-*.pycvenv39/
+*.pyc
+venv39/
