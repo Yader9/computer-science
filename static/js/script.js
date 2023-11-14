@@ -4,6 +4,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const sendButton = document.getElementById("sendButton");
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
+    // If the flag isn't set, it means it's the user's first visit/interaction.
+    if (localStorage.getItem('firstExchangeComplete') === null) {
+        localStorage.setItem('firstExchangeComplete', 'false');
+    }
+
     let firstExchangeComplete = localStorage.getItem('firstExchangeComplete') === 'true';
     
     const chatForm = document.getElementById("chatForm");
@@ -65,25 +70,25 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function processBotResponse(data) {
-        console.log('Processing bot response:', data); // Debugging line
-    
+        console.log('Processing bot response:', data);
+
         typingAnimation.style.display = "none";
-        
+
         // Always append the bot's reply to the chat.
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
-    
-        // Check if it's the first exchange and quick replies have not been displayed yet
-        if (!firstExchangeComplete && data.quick_replies && data.quick_replies.length > 0) {
+
+        // Check if it's the first exchange and quick replies have not been displayed yet.
+        if (data.quick_replies && !firstExchangeComplete) {
             displayQuickReplies(data.quick_replies);
-            // Mark the first exchange as complete to prevent future welcome messages
+            // Since we've now displayed the quick replies, set the flag to true.
             localStorage.setItem('firstExchangeComplete', 'true');
-            firstExchangeComplete = true; // Update the local variable for the current page session
+            firstExchangeComplete = true;
         }
-    
+
         playReceiveSound();
-    }    
+    }   
     
     function pollForResponse(user_id) {
         setTimeout(() => {
