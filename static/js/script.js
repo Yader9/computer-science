@@ -66,8 +66,12 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         console.log('Processing bot response:', data); // Debugging line
+
+        console.log('firstExchange before processing:', firstExchange);
+
         typingAnimation.style.display = "none";
         if (firstExchange) {
+            console.log('Inside firstExchange conditional'); 
             if (data.reply) {
                 appendMessageToChat("Bot", data.reply);
             }
@@ -75,6 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 displayQuickReplies(data.quick_replies);
                 firstExchange = false; // Move this line inside the check for quick replies
                 localStorage.setItem('firstExchange', 'false');
+                console.log('firstExchange should be set to false now');
             }
         } else {
             if (data.reply) {
@@ -82,6 +87,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
         playReceiveSound();
+
+        console.log('firstExchange after processing:', firstExchange);
     }
     
     function pollForResponse(user_id) {
