@@ -164,6 +164,7 @@ def index():
 def chatbot():
     user_id = session.get('user_id')
     if not user_id:
+        # Generate a new user ID if it doesn't exist
         user_id = os.urandom(24).hex()
         session['user_id'] = user_id
 
@@ -174,9 +175,11 @@ def chatbot():
     message = data['message']
 
     context = get_or_create_context(user_id, message)
+    
     if not context.get('received_welcome', False):
         welcome_message, quick_replies = send_welcome_message(context, user_id)
-        # No need to update the context here since send_welcome_message already does it
+        # Ensure that context changes are stored in the session or database
+        session['user_context'] = user_context  # This line is new
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
     else:
         # Continue with the normal chatbot conversation

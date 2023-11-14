@@ -71,24 +71,24 @@ document.addEventListener("DOMContentLoaded", function() {
 
     function processBotResponse(data) {
         console.log('Processing bot response:', data);
-
+    
         typingAnimation.style.display = "none";
-
+    
         // Always append the bot's reply to the chat.
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
-
+    
         // Check if it's the first exchange and quick replies have not been displayed yet.
-        if (data.quick_replies && !firstExchangeComplete) {
+        if (!firstExchangeComplete && data.quick_replies && data.quick_replies.length > 0) {
             displayQuickReplies(data.quick_replies);
             // Since we've now displayed the quick replies, set the flag to true.
             localStorage.setItem('firstExchangeComplete', 'true');
             firstExchangeComplete = true;
         }
-
+    
         playReceiveSound();
-    }   
+    }       
     
     function pollForResponse(user_id) {
         setTimeout(() => {
