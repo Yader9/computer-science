@@ -1,2 +1,24 @@
+# Ignorar archivos compilados de Python
 *.pyc
+*.pyo
+*.pyd
+
+# Ignorar el entorno virtual
 venv39/
+venv/
+env/
+
+# Ignorar carpetas generadas por Python
+__pycache__/
+
+# Ignorar archivos de configuración locales
+.env
+
+# Ignorar archivos creados por macOS
+.DS_Store
+
+# Ignorar configuraciones de sistema de Windows
+Thumbs.db
+
+# Ignorar bases de datos locales
+*.sqlite3

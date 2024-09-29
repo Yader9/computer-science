@@ -1,5 +1,5 @@
 """
-This module provides an endpoint for a Chatbot service to answer PCB-related questions.
+Este módulo proporciona un endpoint para un servicio de Chatbot que ayuda a personas que desean iniciar en el gimnasio, proporcionando rutinas y planes de ejercicios personalizados.
 """
 
 import logging
@@ -13,58 +13,48 @@ import openai
 from openai.error import OpenAIError
 from flask_session import Session
 
-# Set up logging
+# Configuración de logging
 logging.basicConfig(level=logging.DEBUG)
 
-# Initialize Flask app
+# Inicialización de la aplicación Flask
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SESSION_COOKIE_SECURE'] = True
 Session(app)
-CORS(app)  # Enable CORS
+CORS(app)  # Habilitar CORS
 
-
-# Global variables
+# Variables globales
 user_context = {}
 openai_responses = {}
-openai_responses_lock = Lock()  # Lock for thread safety
+openai_responses_lock = Lock()  # Lock para seguridad en hilos
 openai.api_key = os.environ.get('OPENAI_API_KEY')
 user_requests = {}
 
-# Function to detect the language of the message
-
-
+# Función para detectar el idioma del mensaje
 def detect_language(message):
     """
-    Detect the language of a given message.
+    Detectar el idioma de un mensaje dado.
     """
-    spanish_keywords = ['hola', 'buenas',
-                        'ayuda', 'día', 'gracias', 'por favor']
+    spanish_keywords = ['hola', 'buenas', 'ayuda', 'día', 'gracias', 'por favor']
     return 'spanish' if any(word in message.lower() for word in spanish_keywords) else 'english'
 
-# Function to get quick replies based on the user's language preference
-
-
+# Función para obtener respuestas rápidas basadas en la preferencia de idioma del usuario
 def get_quick_replies(language):
     if language == 'spanish':
-        return ['¿Qué es un PCB?', 'Cuéntame sobre electrónica', '¿Cómo se hacen los PCBs?']
+        return ['¿Cómo puedo empezar a entrenar?', 'Necesito una rutina de ejercicios', 'Consejos para una alimentación saludable']
     else:
-        return ['What is a PCB?', 'Tell me about electronics', 'How are PCBs made?']
+        return ['How can I start training?', 'I need an exercise routine', 'Tips for healthy eating']
 
-# Function to check if rate limit has been exceeded
-
-
+# Función para verificar si se ha excedido el límite de solicitudes
 def rate_limit_exceeded(user_id):
     user_requests[user_id] = user_requests.get(user_id, 0) + 1
-    if user_requests[user_id] > 50:  # Limit per user
+    if user_requests[user_id] > 50:  # Límite por usuario
         return True
     return False
 
-# Function to get or create user context and update it with the new message
-
-
+# Función para obtener o crear el contexto del usuario y actualizarlo con el nuevo mensaje
 def get_or_create_context(user_id, message):
     if 'user_context' not in session or user_id not in session['user_context']:
         session['user_context'] = session.get('user_context', {})
@@ -72,125 +62,123 @@ def get_or_create_context(user_id, message):
             "language_preference": detect_language(message),
             "previous_questions": [message],
             "received_welcome": False,
-            "creation_time": datetime.now().isoformat()
+            "creation_time": datetime.now().isoformat(),
+            # Nuevos campos para datos del usuario
+            "age": None,
+            "gender": None,
+            "lifestyle": None,
+            "eating_habits": None
         }
     else:
-        # Directly modify the session's user_context without assigning it to a local variable
         session['user_context'][user_id]['previous_questions'].append(message)
         session['user_context'][user_id]['previous_questions'] = session['user_context'][user_id]['previous_questions'][-5:]
 
     session.modified = True
     return session['user_context'][user_id]
 
-
 def send_welcome_message(user_id):
     context = session['user_context'][user_id]
     if not context['received_welcome']:
-        # Prepare the welcome message and quick replies
+        # Preparar el mensaje de bienvenida y respuestas rápidas
         language = context["language_preference"]
-        welcome_message = ('¡Bienvenido al Chatbot de PCB! ¿En qué puedo ayudarte hoy?'
+        welcome_message = ('¡Bienvenido al Asistente de Gimnasio! ¿En qué puedo ayudarte hoy?'
                            if language == 'spanish' else
-                           'Welcome to the PCB Chatbot! How can I assist you today?')
+                           'Welcome to the Gym Assistant! How can I assist you today?')
         quick_replies = get_quick_replies(language)
 
-        # Update the context with the received_welcome flag
+        # Actualizar el contexto con el indicador de bienvenida recibida
         context['received_welcome'] = True
         session['user_context'][user_id] = context
-        session.modified = True  # Mark session as modified to save changes
+        session.modified = True  # Marcar la sesión como modificada para guardar cambios
 
         return welcome_message, quick_replies
     else:
-        # Quick replies have already been sent; return without them
+        # Las respuestas rápidas ya se han enviado; devolver sin ellas
         return None, []
 
-# New function to prepare the context messages
-
-
+# Función para preparar los mensajes de contexto
 def prepare_context_messages(user_id):
-    # Check if user_id exists in the user_context within the session
     if 'user_context' not in session or user_id not in session['user_context']:
-        logging.error('user_id %s not found in session user_context', user_id)
-        return [{"role": "system", "content": "Please start a new conversation."}]
+        logging.error('user_id %s no encontrado en user_context de la sesión', user_id)
+        return [{"role": "system", "content": "Por favor, inicia una nueva conversación."}]
 
-    # Otherwise, prepare the context messages
+    # Preparar los mensajes de contexto
+    context = session['user_context'][user_id]
+    language = context["language_preference"]
+
+    if language == 'spanish':
+        system_message = "Eres un asistente personal de fitness que proporciona rutinas y planes de ejercicios personalizados basados en la edad, género, estilo de vida y hábitos alimenticios del usuario."
+    else:
+        system_message = "You are a personal fitness assistant providing personalized exercise routines and plans based on the user's age, gender, lifestyle, and eating habits."
+
     context_messages = [
-        {"role": "system", "content": "You are a helpful assistant."}
+        {"role": "system", "content": system_message}
     ] + [
         {"role": "user", "content": msg}
-        for msg in session['user_context'][user_id].get('previous_questions', [])[-5:]
+        for msg in context.get('previous_questions', [])[-5:]
     ]
     return context_messages
 
-
 def handle_chatbot_conversation(user_id, message):
-    # Ensure user_id exists in the session before proceeding
     if user_id not in session.get('user_context', {}):
-        # Handle the case where user_id is not in the session
-        logging.error('user_id %s is not in the session user_context', user_id)
-        return {"status": "error", "error_message": "Session error: user context not found"}
+        logging.error('user_id %s no está en user_context de la sesión', user_id)
+        return {"status": "error", "error_message": "Error de sesión: contexto de usuario no encontrado"}
 
-    # Update the user context with the new message
+    # Actualizar el contexto del usuario con el nuevo mensaje
     get_or_create_context(user_id, message)
     context_messages = prepare_context_messages(user_id)
 
-    # Check if context_messages is not empty before starting a new thread
     if context_messages:
         thread = threading.Thread(
             target=call_openai_api, args=(user_id, context_messages))
         thread.start()
         return {"status": "pending", "user_id": user_id}
     else:
-        return {"status": "error", "error_message": "Cannot initiate conversation with empty context"}
-
+        return {"status": "error", "error_message": "No se puede iniciar la conversación con un contexto vacío"}
 
 def call_openai_api(user_id, context_messages):
-    # Check if context_messages is empty and log an error if so
     if not context_messages:
-        logging.error('Empty context messages for user_id %s', user_id)
-        with openai_responses_lock:  # Use the lock when modifying the shared resource
+        logging.error('Mensajes de contexto vacíos para user_id %s', user_id)
+        with openai_responses_lock:
             openai_responses[user_id] = {
                 "status": "error",
-                "error_message": "Empty context messages"
+                "error_message": "Mensajes de contexto vacíos"
             }
         return
 
     try:
-        # Call OpenAI API with the context messages
+        # Llamar a la API de OpenAI con los mensajes de contexto
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o-2024-08-06",
             messages=context_messages,
-            max_tokens=150,
-            temperature=0.2
+            max_tokens=500,
+            temperature=0.7
         )
-        # Store the response in the global dictionary
-        openai_responses[user_id] = {
-            "status": "completed",
-            "response": response.choices[0].message['content']
-        }
+        with openai_responses_lock:
+            openai_responses[user_id] = {
+                "status": "completed",
+                "response": response.choices[0].message['content']
+            }
     except OpenAIError as e:
-        # Log the error and update the global dictionary
-        logging.error('OpenAI API error for user_id %s: %s', user_id, str(e))
-        openai_responses[user_id] = {
-            "status": "error",
-            "error_message": str(e)
-        }
+        logging.error('Error de la API de OpenAI para user_id %s: %s', user_id, str(e))
+        with openai_responses_lock:
+            openai_responses[user_id] = {
+                "status": "error",
+                "error_message": str(e)
+            }
 
-# Endpoint for checking the status of the OpenAI API response
-
-
+# Endpoint para verificar el estado de la respuesta de la API de OpenAI
 @app.route('/check_response', methods=['GET'])
 def check_response():
     user_id = request.args.get('user_id')
-    if user_id in openai_responses:
-        # If the response is ready, pop it from the dictionary and return it
-        return jsonify(openai_responses.pop(user_id))
+    with openai_responses_lock:
+        if user_id in openai_responses:
+            return jsonify(openai_responses.pop(user_id))
     return jsonify({"status": "pending"})
-
 
 @app.route('/')
 def index():
     return render_template('chatbot_interface.html')
-
 
 @app.route('/chatbot', methods=['POST'])
 def chatbot():
@@ -200,7 +188,7 @@ def chatbot():
         session['user_id'] = user_id
 
     if rate_limit_exceeded(user_id):
-        return jsonify({'status': 'error', 'error_message': 'Rate limit exceeded'}), 429
+        return jsonify({'status': 'error', 'error_message': 'Límite de solicitudes excedido'}), 429
 
     data = request.get_json()
     message = data['message']
@@ -211,6 +199,6 @@ def chatbot():
     if welcome_message:
         return jsonify({'reply': welcome_message, 'quick_replies': quick_replies})
 
-    # Continue with the normal chatbot conversation
+    # Continuar con la conversación normal del chatbot
     result = handle_chatbot_conversation(user_id, message)
     return jsonify(result)

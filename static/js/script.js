@@ -4,7 +4,6 @@ document.addEventListener("DOMContentLoaded", function() {
     const sendButton = document.getElementById("sendButton");
     const typingAnimation = document.getElementById("typingAnimation");
     const quickReplies = document.getElementById("quickReplies");
-    // If the flag isn't set, it means it's the user's first visit/interaction.
     
     const chatForm = document.getElementById("chatForm");
     chatForm.addEventListener("submit", function(event) {
@@ -35,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function() {
             appendMessageToChat("User", message);
             sendMessageToBot(message);
             chatInput.value = "";
+            chatInput.focus(); // Enfocar el campo de entrada después de enviar
+            quickReplies.style.display = 'none'; // Ocultar respuestas rápidas después de enviar
         }
     }
 
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", function() {
         .catch(error => {
             console.error("Error:", error);
             typingAnimation.style.display = "none";
+            appendMessageToChat("Bot", "Lo siento, ha ocurrido un error. Por favor, intenta nuevamente."); // Mostrar mensaje de error al usuario
         });
     }
 
@@ -64,21 +66,29 @@ document.addEventListener("DOMContentLoaded", function() {
 
         typingAnimation.style.display = "none";
         
-        // Always append the bot's reply to the chat.
+        // Siempre agrega la respuesta del bot al chat.
         if (data.reply) {
             appendMessageToChat("Bot", data.reply);
         }
         
-        // Handle quick replies from the backend
+        // Manejar respuestas rápidas desde el backend
         if (data.quick_replies && data.quick_replies.length > 0) {
             displayQuickReplies(data.quick_replies);
+        } else {
+            quickReplies.innerHTML = ''; // Limpiar respuestas rápidas si no hay nuevas
+            quickReplies.style.display = 'none';
         }
         
         playReceiveSound();
     }     
-    
-    function pollForResponse(user_id) {
-        // Adjust the timeout as needed based on backend processing time
+        
+    function pollForResponse(user_id, attempts = 0) {
+        if (attempts >= 10) { // Limitar el número de intentos de polling
+            typingAnimation.style.display = "none";
+            appendMessageToChat("Bot", "El servidor está tardando en responder. Por favor, intenta más tarde.");
+            return;
+        }
+        // Ajustar el tiempo de espera según sea necesario basado en el tiempo de procesamiento del backend
         setTimeout(() => {
             fetch(`/check_response?user_id=${user_id}`)
             .then(response => response.json())
@@ -90,21 +100,20 @@ document.addEventListener("DOMContentLoaded", function() {
                 } else if (data.status === 'error') {
                     console.error("Error from OpenAI:", data.error_message);
                     typingAnimation.style.display = "none";
-                    // Display some error to the user if needed
+                    appendMessageToChat("Bot", "Lo siento, ha ocurrido un error. Por favor, intenta nuevamente."); // Mostrar mensaje de error al usuario
                 } else {
-                    // If the status is still pending, poll again
-                    pollForResponse(user_id);
+                    // Si el estado sigue siendo pendiente, volver a realizar polling
+                    pollForResponse(user_id, attempts + 1);
                 }
             })
             .catch(error => {
                 console.error("Error while polling for response:", error);
                 typingAnimation.style.display = "none";
-                // Optionally, handle the error (e.g., display a message to the user)
+                appendMessageToChat("Bot", "Lo siento, ha ocurrido un error. Por favor, intenta nuevamente."); // Mostrar mensaje de error al usuario
             });
-        }, 3000); // Example: 3000ms polling interval
+        }, 3000); // Intervalo de polling de 3000ms
     }
     
-
     function displayQuickReplies(replies) {
         quickReplies.innerHTML = '';
         replies.forEach(reply => {
@@ -113,7 +122,7 @@ document.addEventListener("DOMContentLoaded", function() {
             button.textContent = reply;
             button.addEventListener('click', function() {
                 chatInput.value = reply;
-                sendInputMessage();
+                chatInput.focus(); // Enfocar el campo de entrada
                 quickReplies.style.display = 'none';
             });
             quickReplies.appendChild(button);
@@ -139,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const introScreen = document.getElementById('introScreen');
         introScreen.style.display = 'none';
         document.querySelector(".chat-container").style.display = "block";
-        // Do not send any message here, just show the chat interface.
-    })
-})
+        chatInput.focus(); // Enfocar el campo de entrada al iniciar el chat
+        // No envíes ningún mensaje aquí, solo muestra la interfaz de chat.
+    });
+});

@@ -1,4 +1,4 @@
-/* General body styles */
+/* Estilos generales del cuerpo */
 body {
     font-family: Arial, sans-serif;
     background-color: #f6f6f6;
@@ -11,7 +11,7 @@ body {
     min-height: 100vh;
 }
 
-/* Container for the chat interface */
+/* Contenedor de la interfaz de chat */
 .chat-container {
     background-color: #fff;
     width: 400px;
@@ -27,7 +27,7 @@ body {
     position: relative;
 }
 
-/* The chat box where messages are displayed */
+/* Caja del chat donde se muestran los mensajes */
 .chat-box {
     display: flex;
     flex-direction: column;
@@ -35,15 +35,42 @@ body {
     overflow: hidden;
 }
 
-/* Where the chat messages appear */
+/* Área donde aparecen los mensajes del chat */
 .chat-output {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
     border-bottom: 1px solid #eaeaea;
+    display: flex;
+    flex-direction: column;
 }
 
-/* The container for the input field and send button */
+/* Estilos del mensaje del bot */
+.bot-message {
+    align-self: flex-start;
+    background-color: #e5f2ff; /* Color azul claro */
+    padding: 8px 12px;
+    border-radius: 17px;
+    margin: 4px 0;
+    font-size: 14px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+/* Estilos del mensaje del usuario */
+.user-message {
+    align-self: flex-end;
+    background-color: #007BFF; /* Azul intenso */
+    color: #fff; /* Texto en blanco para mejor contraste */
+    padding: 8px 12px;
+    border-radius: 17px;
+    margin: 4px 0;
+    font-size: 14px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+/* Contenedor del campo de entrada y botón de envío */
 .chat-input-container {
     padding: 10px;
     background-color: #fff;
@@ -53,7 +80,7 @@ body {
     justify-content: space-between;
 }
 
-/* The input field for typing messages */
+/* Campo de entrada para escribir mensajes */
 .chat-input.form-control {
     flex: 1;
     padding: 10px 15px;
@@ -65,7 +92,7 @@ body {
     margin-right: 10px;
 }
 
-/* The send button */
+/* Botón de envío */
 button#sendButton {
     padding: 10px 16px;
     height: 48px;
@@ -84,7 +111,7 @@ button#sendButton:hover {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Styles for Quick Replies */
+/* Estilos para las respuestas rápidas */
 .quick-replies {
     padding: 0 16px 10px;
     display: flex;
@@ -105,7 +132,7 @@ button#sendButton:hover {
     background-color: #ddd;
 }
 
-/* Typing animation dots */
+/* Animación de puntos para "escribiendo" */
 .dot {
     animation: typingDots 1.5s infinite;
     opacity: 0;
@@ -120,7 +147,7 @@ button#sendButton:hover {
     50% { opacity: 1; }
 }
 
-/* Start chat button fixed at the bottom */
+/* Botón de iniciar chat */
 #startChatButton {
     padding: 12px 25px;
     font-size: 16px;
@@ -137,14 +164,14 @@ button#sendButton:hover {
     position: fixed;
 }
 
-/* Hidden elements */
+/* Elementos ocultos */
 .hidden {
     display: none !important;
 }
 
-/* Chatbot title animation */
+/* Animación del título del chatbot */
 .chatbot-title {
-    font-size: 24px; /* Keep the font size that you prefer */
+    font-size: 24px;
     color: #007BFF;
     text-align: center;
     position: absolute;
@@ -171,57 +198,56 @@ button#sendButton:hover {
     50% { border-color: inherit; }
 }
 
-/* Responsive adjustments for mobile */
+/* Ajustes responsivos para móvil */
 @media only screen and (max-width: 600px) {
     body {
-        padding: 0; /* Remove padding to fit the chat container properly on mobile screens */
+        padding: 0;
     }
     .chat-container {
-        width: 100%; /* Full width on mobile devices */
-        max-width: 100%; /* Ensure it doesn't exceed the width of the screen */
-        margin: 0; /* Reset any margins */
-        border-radius: 0; /* Remove border radius for full width utilization */
-        box-shadow: none; /* Remove box shadow on mobile for a cleaner look */
-        height: 100vh; /* Full height to utilize the screen space */
-        max-height: 100vh; /* Ensure it doesn't exceed the height of the screen */
-        padding-bottom: 0; /* Reset padding-bottom since input container is in normal flow */
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+        height: 100vh;
+        max-height: 100vh;
+        padding-bottom: 0;
     }
     .chat-box {
-        padding-top: 50px; /* Space for the title */
-        max-height: calc(100vh - 58px); /* Adjust based on input container height */
+        padding-top: 50px;
+        max-height: calc(100vh - 58px);
     }
     .chat-output {
-        max-height: calc(100vh - 106px); /* Adjust based on input and title container height */
-        padding-bottom: 0; /* Remove padding-bottom to prevent overlap */
+        max-height: calc(100vh - 106px);
+        padding-bottom: 0;
     }
     .chat-input-container {
-        position: static; /* Let the input container flow in the document */
-        margin-bottom: 10px; /* Space below the input container */
+        position: static;
+        margin-bottom: 10px;
     }
     .chat-input.form-control {
-        margin-right: 0; /* Ensure the input field uses all available space */
+        margin-right: 0;
     }
     button#sendButton {
-        padding: 8px 12px; /* Optional: Adjust padding to reduce button size on mobile */
+        padding: 8px 12px;
     }
     .quick-replies {
-        padding: 10px 10px 0; /* Adjust quick replies padding */
-        margin-bottom: 60px; /* Space below quick replies */
-        justify-content: flex-start; /* Align quick replies to the start */
+        padding: 10px 10px 0;
+        margin-bottom: 60px;
+        justify-content: flex-start;
     }
-    /* Styles for the chatbot title on mobile */
+    /* Estilos para el título del chatbot en móvil */
     .chatbot-title {
-        font-size: 16px; /* Adjust the font size for mobile */
-        top: 5px; /* Position the title at the top */
-        left: 50%; /* Center the title horizontally */
-        transform: translateX(-50%); /* Adjust horizontal positioning */
-        padding: 10px 0; /* Padding around the title */
-        z-index: 2; /* Ensure the title is above other content */
+        font-size: 16px;
+        top: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 0;
+        z-index: 2;
     }
 }
 
-
-/* Intro screen styling */
+/* Estilos de la pantalla de introducción */
 #introScreen {
     display: flex;
     flex-direction: column;
@@ -240,32 +266,4 @@ button#sendButton:hover {
 .custom-logo-size {
     max-width: 250px !important;
     width: 100% !important;
-}
-
-/* Bot message styles */
-.bot-message {
-    background-color: #e5f2ff; /* Sky blue color similar to iMessages */
-    padding: 8px 12px;
-    border-radius: 17px; /* Rounded corners like iMessages */
-    margin: 4px 0;
-    font-size: 14px;
-    max-width: 80%;
-    word-wrap: break-word;
-    float: right;
-    clear: both;
-    display: block;
-}
-
-/* User message styles */
-.user-message {
-    background-color: #fff;
-    padding: 8px 12px;
-    border-radius: 17px;
-    margin: 4px 0;
-    font-size: 14px;
-    max-width: 80%;
-    word-wrap: break-word;
-    float: left;
-    clear: both;
-    display: block;
 }

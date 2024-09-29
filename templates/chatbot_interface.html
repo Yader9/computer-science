@@ -1,62 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PCB Chatbot</title>
+    <title>Gym Coach</title>
     <!-- Bootstrap CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom Stylesheet -->
+    <!-- Hoja de Estilos Personalizada -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body class="d-flex flex-column h-100">
-    <!-- Intro Screen -->
+    <!-- Pantalla de Introducción -->
     <div id="introScreen" class="text-center flex-grow-1"> 
-        <h1 id="chatbotTitle">PCB ChatBot</h1>
+        <h1 id="chatbotTitle">Gym Coach</h1>
         <img src="{{ url_for('static', filename='img/pcb_chatbot_1.png') }}" alt="PCB ChatBot Logo" class="img-fluid custom-logo-size mx-auto d-block mt-4">
-        <button id="startChatButton" class="btn btn-primary">Comenzar chat</button>
+        <button id="startChatButton" class="btn btn-primary" aria-label="Comenzar chat">Comenzar chat</button>
     </div>
 
-    <!-- Chat Container -->
+    <!-- Contenedor del Chat -->
     <div class="chat-container flex-grow-1" style="display: none;">
         <div class="chat-box">
-            <!-- Chat Title -->
-            <h1 class="chatbot-title">PCB ChatBot</h1>
-            <!-- Chat Output -->
+            <!-- Título del Chat -->
+            <h1 class="chatbot-title">Gym Coach</h1>
+            <!-- Salida del Chat -->
             <div class="chat-output" id="chatOutput">
-                <!-- Messages will be dynamically inserted here -->
+                <!-- Los mensajes se insertarán dinámicamente aquí -->
             </div>
-            <!-- Typing Animation (if applicable) -->
+            <!-- Animación de Escritura (si aplica) -->
             <div class="typing-animation" id="typingAnimation" style="display: none;">
-                PCB Bot está escribiendo
+                Gym Coach está escribiendo
                 <span class="dot">.</span>
                 <span class="dot">.</span>
                 <span class="dot">.</span>
             </div>
-            <!-- Quick Replies (if applicable) -->
+            <!-- Respuestas Rápidas (si aplica) -->
             <div class="quick-replies" id="quickReplies" style="display: none;"></div>
-            <!-- Chat Input Container -->
+            <!-- Contenedor de Entrada de Chat -->
             <div class="chat-input-container">
                 <form id="chatForm" class="d-flex justify-content-between"> 
                     <textarea class="chat-input form-control" id="chatInput" placeholder="Escribe un mensaje..."></textarea>
-                    <button type="submit" id="sendButton" class="btn btn-primary">Enviar</button>
+                    <button type="submit" id="sendButton" class="btn btn-primary" aria-label="Enviar mensaje">Enviar</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Notification Sound -->
+    <!-- Sonido de Notificación -->
     <audio id="sendSound" src="{{ url_for('static', filename='audio/notification_audio.mp3') }}" preload="auto"></audio>
 
-    <!-- Footer -->
+    <!-- Pie de Página -->
     <footer class="text-center mt-4 d-flex align-items-center justify-content-center">
-        &copy; 2023 PCB ChatBot. Todos los derechos reservados.
+        &copy; 2024 Gym Coach. Todos los derechos reservados.
     </footer>
     
-    <!-- External JavaScript -->
+    <!-- JavaScript Externo -->
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <!-- Title Animation Script -->
+    <!-- Script de Animación del Título -->
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const title = document.getElementById("chatbotTitle");
